@@ -9,11 +9,149 @@
 
 @theme {
 	--font-family: 'Noto Sans', sans-serif;
-	/* Add theme styling here */
+	
+	/* Heroic Fantasy Theme - Greens & Browns */
+	--color-forest-950: #1a2614;
+	--color-forest-900: #243319;
+	--color-forest-800: #2d401f;
+	--color-forest-700: #3d5429;
+	--color-forest-600: #4d6833;
+	--color-forest-500: #5d7c3d;
+	--color-forest-400: #7a9954;
+	--color-forest-300: #9bb672;
+	--color-forest-200: #bcd399;
+	--color-forest-100: #ddeac0;
+	--color-forest-50: #f0f7e6;
+	
+	--color-bark-950: #2b1f15;
+	--color-bark-900: #3d2a1a;
+	--color-bark-800: #4f3520;
+	--color-bark-700: #6b4628;
+	--color-bark-600: #875730;
+	--color-bark-500: #a36838;
+	--color-bark-400: #bf8850;
+	--color-bark-300: #d4a876;
+	--color-bark-200: #e6c9a0;
+	--color-bark-100: #f2e5d1;
+	--color-bark-50: #faf6ef;
+	
+	/* Text colors for contrast */
+	--color-parchment: #f9f5e8;
+	--color-ink: #1a2614;
+	
+	/* Team colors - adjusted for fantasy theme */
+	--color-crimson-600: #8b1a1a;
+	--color-crimson-700: #731515;
+	--color-sapphire-600: #1a4d8b;
+	--color-sapphire-700: #153e73;
 }
 
 html,
 body {
-	background-color: var(--color-slate-100);
+	background-color: var(--color-forest-100);
 	font-family: var(--font-family);
+	color: var(--color-ink);
+}
+
+/* Visual effects for evolved units */
+.effect-fire {
+	filter: drop-shadow(0 0 12px rgba(255, 69, 0, 1)) 
+	        drop-shadow(0 0 24px rgba(255, 140, 0, 0.9))
+	        hue-rotate(10deg) brightness(1.15) saturate(1.3);
+	animation: pulse-fire 2s ease-in-out infinite;
+}
+
+@keyframes pulse-fire {
+	0%, 100% { filter: drop-shadow(0 0 12px rgba(255, 69, 0, 1)) drop-shadow(0 0 24px rgba(255, 140, 0, 0.9)) hue-rotate(10deg) brightness(1.15) saturate(1.3); }
+	50% { filter: drop-shadow(0 0 18px rgba(255, 69, 0, 1)) drop-shadow(0 0 36px rgba(255, 140, 0, 1)) hue-rotate(15deg) brightness(1.2) saturate(1.4); }
+}
+
+.effect-frost {
+	filter: drop-shadow(0 0 12px rgba(0, 191, 255, 1)) 
+	        drop-shadow(0 0 24px rgba(135, 206, 250, 0.9))
+	        hue-rotate(-30deg) brightness(1.2) saturate(1.4);
+	animation: pulse-frost 2s ease-in-out infinite;
+}
+
+@keyframes pulse-frost {
+	0%, 100% { filter: drop-shadow(0 0 12px rgba(0, 191, 255, 1)) drop-shadow(0 0 24px rgba(135, 206, 250, 0.9)) hue-rotate(-30deg) brightness(1.2) saturate(1.4); }
+	50% { filter: drop-shadow(0 0 18px rgba(0, 191, 255, 1)) drop-shadow(0 0 36px rgba(135, 206, 250, 1)) hue-rotate(-35deg) brightness(1.25) saturate(1.5); }
+}
+
+.effect-shadow {
+	filter: drop-shadow(0 0 15px rgba(138, 43, 226, 1)) 
+	        drop-shadow(0 0 30px rgba(75, 0, 130, 0.95))
+	        brightness(0.95) saturate(1.2) contrast(1.1);
+	animation: pulse-shadow 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse-shadow {
+	0%, 100% { filter: drop-shadow(0 0 15px rgba(138, 43, 226, 1)) drop-shadow(0 0 30px rgba(75, 0, 130, 0.95)) brightness(0.95) saturate(1.2) contrast(1.1); }
+	50% { filter: drop-shadow(0 0 22px rgba(138, 43, 226, 1)) drop-shadow(0 0 44px rgba(75, 0, 130, 1)) brightness(0.9) saturate(1.3) contrast(1.15); }
+}
+
+.effect-storm {
+	filter: drop-shadow(0 0 12px rgba(255, 255, 0, 1)) 
+	        drop-shadow(0 0 24px rgba(255, 215, 0, 0.95))
+	        brightness(1.25) saturate(1.5) contrast(1.1);
+	animation: pulse-storm 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-storm {
+	0%, 100% { filter: drop-shadow(0 0 12px rgba(255, 255, 0, 1)) drop-shadow(0 0 24px rgba(255, 215, 0, 0.95)) brightness(1.25) saturate(1.5) contrast(1.1); }
+	50% { filter: drop-shadow(0 0 18px rgba(255, 255, 0, 1)) drop-shadow(0 0 36px rgba(255, 215, 0, 1)) brightness(1.35) saturate(1.7) contrast(1.15); }
+}
+
+.effect-poison {
+	filter: drop-shadow(0 0 12px rgba(0, 255, 0, 0.95)) 
+	        drop-shadow(0 0 24px rgba(124, 252, 0, 0.85))
+	        hue-rotate(100deg) saturate(1.6) brightness(1.1);
+	animation: pulse-poison 2s ease-in-out infinite;
+}
+
+@keyframes pulse-poison {
+	0%, 100% { filter: drop-shadow(0 0 12px rgba(0, 255, 0, 0.95)) drop-shadow(0 0 24px rgba(124, 252, 0, 0.85)) hue-rotate(100deg) saturate(1.6) brightness(1.1); }
+	50% { filter: drop-shadow(0 0 18px rgba(0, 255, 0, 1)) drop-shadow(0 0 36px rgba(124, 252, 0, 1)) hue-rotate(105deg) saturate(1.8) brightness(1.15); }
+}
+
+.effect-holy {
+	filter: drop-shadow(0 0 15px rgba(255, 255, 255, 1)) 
+	        drop-shadow(0 0 30px rgba(255, 215, 0, 0.9))
+	        brightness(1.3) saturate(1.1) contrast(1.1);
+	animation: pulse-holy 2s ease-in-out infinite;
+}
+
+@keyframes pulse-holy {
+	0%, 100% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 1)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.9)) brightness(1.3) saturate(1.1) contrast(1.1); }
+	50% { filter: drop-shadow(0 0 22px rgba(255, 255, 255, 1)) drop-shadow(0 0 44px rgba(255, 215, 0, 1)) brightness(1.4) saturate(1.2) contrast(1.15); }
+}
+
+.effect-metal {
+	filter: drop-shadow(0 0 10px rgba(192, 192, 192, 1)) 
+	        drop-shadow(0 0 20px rgba(169, 169, 169, 0.85))
+	        contrast(1.2) saturate(0.8) brightness(1.1);
+	animation: pulse-metal 2s ease-in-out infinite;
+}
+
+@keyframes pulse-metal {
+	0%, 100% { filter: drop-shadow(0 0 10px rgba(192, 192, 192, 1)) drop-shadow(0 0 20px rgba(169, 169, 169, 0.85)) contrast(1.2) saturate(0.8) brightness(1.1); }
+	50% { filter: drop-shadow(0 0 15px rgba(192, 192, 192, 1)) drop-shadow(0 0 30px rgba(169, 169, 169, 1)) contrast(1.25) saturate(0.75) brightness(1.15); }
+}
+
+.effect-default {
+	filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8)) 
+	        drop-shadow(0 0 16px rgba(255, 255, 255, 0.4))
+	        brightness(1.05);
+}
+
+/* Combat feedback animation */
+@keyframes floatUp {
+	0% {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+	100% {
+		transform: translate(-50%, -150%) scale(0.5);
+		opacity: 0;
+	}
 }

@@ -14,7 +14,11 @@ export const playerActions = {
 			[playerStore, globalStore],
 			([playerState, globalState]) => {
 				playerState.name = name;
-				globalState.players[kmClient.id] = { name };
+				globalState.players[kmClient.id] = {
+					name,
+					team: null,
+					ready: false
+				};
 			}
 		);
 	}

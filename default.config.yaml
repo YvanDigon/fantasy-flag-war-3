@@ -1,39 +1,91 @@
 # yaml-language-server: $schema=./.kokimoki/schema.json
 
-# Translations
-title: 'Host Starter'
-
-gameLobbyMd: |
-  # Waiting for game to start...
-  The game will start once the host presses the start button.
-
-connectionsMd: |
-  # Connections example
-
-sharedStateMd: |
-  # Shared State example
-
-players: 'Players'
-timeElapsed: 'Time elapsed'
-startButton: 'Start Game'
-stopButton: 'Stop Game'
-
-loading: 'Loading...'
-
-menuTitle: 'Menu'
-menuConnections: 'Connections'
-menuGameLobby: 'Lobby'
-
-playerNameTitle: 'Enter Your Name'
-playerNamePlaceholder: 'Your name...'
-playerNameLabel: 'Name:'
-playerNameButton: 'Continue'
-
+# General
+title: 'Fantasy Flag War'
 hostLabel: 'Host'
 presenterLabel: 'Presenter'
+loading: 'Loading...'
 
+# Player name
+playerNameTitle: 'Enter Your Name'
+playerNamePlaceholder: 'Your name...'
+playerNameButton: 'Continue'
+
+# Team selection
+teamSelectionTitle: 'Choose Your Team'
+redTeam: 'Red Team'
+blueTeam: 'Blue Team'
+randomTeam: 'Random Team'
+
+# Intro preparation
+introPreparationTitle: 'Choose Your Starting Soldier'
+meleeType: 'Melee'
+mageType: 'Mage'
+rangedType: 'Ranged'
+confirmChoice: 'Confirm'
+
+# Commander screen
+commanderTitle: 'Commander'
+gold: 'Gold'
+deployButton: 'Deploy Soldier'
+evolveButton: 'Evolve Soldier'
+readyButton: 'Ready'
+defendCastleButton: 'Defend Castle'
+notEnoughGold: 'Not enough gold'
+selectLane: 'Select Lane'
+topLane: 'Top Lane'
+midLane: 'Mid Lane'
+botLane: 'Bot Lane'
+deployedUnits: 'Deployed Units'
+
+# Soldier stats
+hp: 'HP'
+attack: 'Attack'
+defense: 'Defense'
+speed: 'Speed'
+criticalHitRate: 'Critical Hit'
+goldGeneration: 'Gold Gen'
+type: 'Type'
+
+# Evolution screen
+evolutionTitle: 'Choose Evolution'
+evolutionCost: 'Cost: 100 Gold'
+superEvolutionButton: 'Super Evolution - 200 Gold'
+backButton: 'Back'
+
+# Super evolution screen
+superEvolutionTitle: 'Super Evolution'
+superEvolutionCost: 'Cost: 200 Gold'
+nameYourSuperEvolution: 'Name Your Super Evolution'
+superEvolutionPlaceholder: 'Enter custom name...'
+confirmSuperEvolution: 'Confirm - 200 Gold'
+generatingSprite: 'Generating custom sprite...'
+
+# Battle wait
+battleWaitTitle: 'Battle in Progress'
+battleWaitMd: 'Your soldiers are fighting! Watch the battle on the presenter screen.'
+
+# Host view
 gameLinksTitle: 'Game Links'
 playerLinkLabel: 'Player Link'
 presenterLinkLabel: 'Presenter Link'
+endPreparationButton: 'End Preparation Phase'
+finishBattleButton: 'Finish Battle Phase'
+playersOverview: 'Players Overview'
+currentPhase: 'Current Phase'
+preparationPhase: 'Preparation Phase'
+battlePhase: 'Battle Phase'
+introPreparationPhase: 'Intro Preparation'
 
-menuAriaLabel: 'Open menu drawer'
+# Presenter view
+redCastle: 'Red Castle'
+blueCastle: 'Blue Castle'
+score: 'Score'
+flags: 'Flags'
+
+# Battle damage formula
+attackMultiplier: 3
+defenseDivisor: 2
+typeAdvantageMultiplier: 3
+criticalHitMultiplier: 3
+dodgeMultiplier: 5

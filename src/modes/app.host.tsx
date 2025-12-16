@@ -4,14 +4,19 @@ import { useGlobalController } from '@/hooks/useGlobalController';
 import { generateLink } from '@/kit/generate-link';
 import { HostPresenterLayout } from '@/layouts/host-presenter';
 import { kmClient } from '@/services/km-client';
-import { SharedStateView } from '@/views/shared-state-view';
+import { globalActions } from '@/state/actions/global-actions';
+import { globalStore } from '@/state/stores/global-store';
+import { DebugView } from '@/views/debug-view';
 import { KmQrCode } from '@kokimoki/shared';
 import * as React from 'react';
+import { useSnapshot } from 'valtio';
 
 const App: React.FC = () => {
 	useGlobalController();
 	const { title } = config;
 	useDocumentTitle(title);
+
+	const { started, phase, players, scores } = useSnapshot(globalStore.proxy);
 
 	if (kmClient.clientContext.mode !== 'host') {
 		throw new Error('App host rendered in non-host mode');
@@ -25,6 +30,13 @@ const App: React.FC = () => {
 		mode: 'presenter',
 		playerCode: kmClient.clientContext.playerCode
 	});
+
+	const getPhaseLabel = () => {
+		if (phase === 'intro-preparation') return config.introPreparationPhase;
+		if (phase === 'preparation') return config.preparationPhase;
+		if (phase === 'battle') return config.battlePhase;
+		return phase;
+	};
 
 	return (
 		<HostPresenterLayout.Root>
@@ -59,7 +71,103 @@ const App: React.FC = () => {
 					</div>
 				</div>
 
-				<SharedStateView />
+				{!started ? (
+					<>
+						<button
+							onClick={globalActions.startGame}
+							className="rounded-lg bg-green-600 px-8 py-4 text-xl font-bold text-white transition hover:bg-green-700"
+						>
+							{config.playerNameButton}
+						</button>
+						<button
+							onClick={globalActions.resetPlayers}
+							className="rounded-lg bg-purple-600 px-8 py-4 text-xl font-bold text-white transition hover:bg-purple-700"
+						>
+							Reset Players
+						</button>
+					</>
+				) : (
+					<>
+						{/* Phase Control */}
+						<div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
+							<h2 className="mb-4 text-xl font-bold">{config.currentPhase}</h2>
+							<div className="mb-4 text-2xl font-bold">{getPhaseLabel()}</div>
+
+							{phase !== 'battle' && (
+								<button
+									onClick={globalActions.endPreparationPhase}
+									className="w-full rounded-lg bg-orange-600 px-6 py-3 font-bold text-white transition hover:bg-orange-700"
+								>
+									{config.endPreparationButton}
+								</button>
+							)}
+
+							{phase === 'battle' && (
+								<button
+									onClick={globalActions.finishBattlePhase}
+									className="w-full rounded-lg bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-700"
+								>
+									{config.finishBattleButton}
+								</button>
+							)}
+						</div>
+
+						{/* Scores */}
+						<div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
+							<h2 className="mb-4 text-xl font-bold">{config.score}</h2>
+							<div className="flex justify-around text-2xl font-bold">
+								<div className="text-red-600">
+									{config.redTeam}: {scores.red}
+								</div>
+								<div className="text-blue-600">
+									{config.blueTeam}: {scores.blue}
+								</div>
+							</div>
+						</div>
+
+						{/* Players Overview */}
+						<div className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
+							<h2 className="mb-4 text-xl font-bold">{config.playersOverview}</h2>
+							<div className="space-y-2">
+								{Object.entries(players).map(([id, player]) => (
+									<div
+										key={id}
+										className="flex items-center justify-between rounded border p-3"
+									>
+										<div>
+											<span className="font-bold">{player.name}</span>
+											{player.team && (
+												<span
+													className={`ml-2 rounded px-2 py-1 text-sm font-bold ${
+														player.team === 'red'
+															? 'bg-red-100 text-red-700'
+															: 'bg-blue-100 text-blue-700'
+													}`}
+												>
+													{player.team === 'red'
+														? config.redTeam
+														: config.blueTeam}
+												</span>
+											)}
+										</div>
+										{player.ready && (
+											<span className="text-green-600">✓ Ready</span>
+										)}
+									</div>
+								))}
+							</div>
+						</div>
+
+						<DebugView />
+
+						<button
+							onClick={globalActions.stopGame}
+							className="rounded-lg bg-red-600 px-8 py-4 text-xl font-bold text-white transition hover:bg-red-700"
+						>
+							Stop Game
+						</button>
+					</>
+				)}
 			</HostPresenterLayout.Main>
 		</HostPresenterLayout.Root>
 	);
