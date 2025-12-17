@@ -83,8 +83,12 @@ export function useGlobalController() {
 		// Call the spawn bot function from global actions
 		// Note: This is a module-level function, not exported in globalActions
 		kmClient.transact([globalStore], ([globalState]) => {
+			console.log('🤖 Bots to spawn:', Object.keys(globalState.bots));
+			console.log('🤖 Player deployments available:', Object.keys(globalState.playerDeployments));
+			
 			// Check if bots need to spawn units
 			if (Object.keys(globalState.bots).length === 0) {
+				console.log('⏸️ No bots to spawn');
 				return; // No bots to spawn
 			}
 			
@@ -96,8 +100,11 @@ export function useGlobalController() {
 				
 				if (teamDeployments.length === 0) {
 					// No players on this team deployed units, skip this bot
+					console.log(`⚠️ Bot ${botId}: No ${bot.team} team deployments found, skipping`);
 					return;
 				}
+				
+				console.log(`✅ Bot ${botId}: Found ${teamDeployments.length} ${bot.team} team deployments to copy from`);
 				
 				// Pick a random player's deployment to copy
 				const [_, playerDeployment] = teamDeployments[

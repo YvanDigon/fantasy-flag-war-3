@@ -74,10 +74,15 @@ const App: React.FC = () => {
 				{!started ? (
 					<>
 						<button
-							onClick={globalActions.startGame}
+							onClick={() => {
+								globalActions.startGame().catch((err) => {
+									console.error('Failed to start game:', err);
+									alert('Failed to start game: ' + err.message);
+								});
+							}}
 							className="rounded-lg bg-green-600 px-8 py-4 text-xl font-bold text-white transition hover:bg-green-700"
 						>
-							{config.playerNameButton}
+							{config.startGameButton}
 						</button>
 						<button
 							onClick={globalActions.resetPlayers}

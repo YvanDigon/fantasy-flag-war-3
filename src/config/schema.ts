@@ -72,6 +72,7 @@ export const schema = z.object({
 	gameLinksTitle: z.string().default('Game Links'),
 	playerLinkLabel: z.string().default('Player Link'),
 	presenterLinkLabel: z.string().default('Presenter Link'),
+	startGameButton: z.string().default('Start Game'),
 	endPreparationButton: z.string().default('End Preparation Phase'),
 	finishBattleButton: z.string().default('Finish Battle Phase'),
 	playersOverview: z.string().default('Players Overview'),
@@ -92,7 +93,8 @@ export const schema = z.object({
 	typeAdvantageMultiplier: z.number().default(3),
 	criticalHitMultiplier: z.number().default(3),
 	dodgeMultiplier: z.number().default(1),
-
+	// Gold pickup mechanic
+	goldPickupAmount: z.number().default(100),
 	// Combat system explanation
 	combatSystemExplanation: z.string().default('Melee beats Ranged, Ranged beats Mage, Mage beats Melee — just like rock-paper-scissors!'),
 	evolutionNotice: z.string().default('You can evolve your soldier between battle rounds.')

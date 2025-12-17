@@ -370,18 +370,16 @@ export class BattleSimulation {
 								});
 							}
 							
-							// Record score event
-							const playerName = globalState.players[unit.playerId]?.name || `Bot ${globalState.bots[unit.playerId]?.botNumber || '?'}`;
-							globalState.lastScoreEvent = {
-								playerName,
-								soldierName: unit.stats.name,
-								team: 'red',
-								sprite: unit.sprite,
-								timestamp: Date.now()
-							};
-							
-							unit.carryingFlag = false;
-							unit.flagId = undefined;
+						// Log flag score event
+						const flagScoreEvent: CombatEvent = {
+							id: `${kmClient.serverTimestamp()}-flag-score-${unit.id}`,
+							timestamp: kmClient.serverTimestamp(),
+							type: 'flag-score',
+							attackerId: unit.id,
+							flagId: unit.flagId
+						};
+						globalState.combatEvents[flagScoreEvent.id] = flagScoreEvent;
+						
 						}
 						unit.isDead = true;
 						continue;
@@ -406,18 +404,16 @@ export class BattleSimulation {
 								});
 							}
 							
-							// Record score event
-							const playerName = globalState.players[unit.playerId]?.name || `Bot ${globalState.bots[unit.playerId]?.botNumber || '?'}`;
-							globalState.lastScoreEvent = {
-								playerName,
-								soldierName: unit.stats.name,
-								team: 'blue',
-								sprite: unit.sprite,
-								timestamp: Date.now()
-							};
-							
-							unit.carryingFlag = false;
-							unit.flagId = undefined;
+						// Log flag score event
+						const flagScoreEvent: CombatEvent = {
+							id: `${kmClient.serverTimestamp()}-flag-score-${unit.id}`,
+							timestamp: kmClient.serverTimestamp(),
+							type: 'flag-score',
+							attackerId: unit.id,
+							flagId: unit.flagId
+						};
+						globalState.combatEvents[flagScoreEvent.id] = flagScoreEvent;
+						
 						}
 						unit.isDead = true;
 						continue;
@@ -455,8 +451,16 @@ export class BattleSimulation {
 							flag.carrierId = unit.id;
 							unit.carryingFlag = true;
 							unit.flagId = flag.id;
-							unit.movingTowardEnemy = false; // Start returning
-						} else {
+							unit.movingTowardEnemy = false; // Start returning						
+						// Log flag grab event
+						const flagGrabEvent: CombatEvent = {
+							id: `${kmClient.serverTimestamp()}-flag-grab-${unit.id}`,
+							timestamp: kmClient.serverTimestamp(),
+							type: 'flag-grab',
+							attackerId: unit.id,
+							flagId: flag.id
+						};
+						globalState.combatEvents[flagGrabEvent.id] = flagGrabEvent;						} else {
 							// No flags available, check for closest flag
 							const closestFlag = this.getClosestFlag(
 								unit,
@@ -502,9 +506,45 @@ export class BattleSimulation {
 						unit.carryingFlag = true;
 						unit.flagId = flag.id;
 						unit.movingTowardEnemy = false; // Start returning
+						
+						// Log flag grab event
+						const flagGrabEvent: CombatEvent = {
+							id: `${kmClient.serverTimestamp()}-flag-grab-${unit.id}`,
+							timestamp: kmClient.serverTimestamp(),
+							type: 'flag-grab',
+							attackerId: unit.id,
+							flagId: flag.id
+						};
+						globalState.combatEvents[flagGrabEvent.id] = flagGrabEvent;
 					}
 				});
 			}
+
+			// Check for gold pickup
+			const unclaimedGold = Object.values(globalState.goldPickups).filter(
+				(gold) => !gold.claimed && gold.lane === unit.lane
+			);
+
+			unclaimedGold.forEach((gold) => {
+				if (Math.abs(unit.position - gold.position) < baseMovement) {
+					// Claim the gold
+					gold.claimed = true;
+					gold.claimedBy = unit.id;
+					
+					// Log gold pickup event
+					const goldPickupEvent: CombatEvent = {
+						id: `${kmClient.serverTimestamp()}-gold-${unit.id}`,
+						timestamp: kmClient.serverTimestamp(),
+						type: 'gold-pickup',
+						attackerId: unit.id,
+						goldId: gold.id
+					};
+					globalState.combatEvents[goldPickupEvent.id] = goldPickupEvent;
+					
+					// Award gold to the player
+					// Note: This will be picked up by the player client
+				}
+			});
 
 			// Update flag position if carrying
 			if (unit.carryingFlag && unit.flagId) {

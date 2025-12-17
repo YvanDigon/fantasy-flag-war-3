@@ -2,9 +2,9 @@ import { playerStore } from '@/state/stores/player-store';
 import { useSnapshot } from 'valtio';
 
 export const CombatHistory = () => {
-	const { kills, deaths } = useSnapshot(playerStore.proxy);
+	const { kills, deaths, goldPickups } = useSnapshot(playerStore.proxy);
 
-	if (kills.length === 0 && deaths.length === 0) {
+	if (kills.length === 0 && deaths.length === 0 && goldPickups.length === 0) {
 		return null;
 	}
 
@@ -55,6 +55,28 @@ export const CombatHistory = () => {
 								/>
 								<span className="mt-1 text-xs font-semibold text-red-900">
 									{death.opponentName}
+								</span>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* Gold Pickups - Money bags collected */}
+			{goldPickups.length > 0 && (
+				<div>
+					<h3 className="mb-2 text-center text-sm font-bold text-yellow-700">
+						Gold Collected
+					</h3>
+					<div className="flex flex-wrap justify-center gap-2">
+						{goldPickups.map((pickup, index) => (
+							<div
+								key={`gold-${pickup.timestamp}-${index}`}
+								className="flex flex-col items-center rounded-lg border-2 border-yellow-600 bg-yellow-50 p-3"
+							>
+								<div className="text-3xl">💰</div>
+								<span className="mt-1 text-sm font-bold text-yellow-900">
+									+{pickup.amount} Gold
 								</span>
 							</div>
 						))}

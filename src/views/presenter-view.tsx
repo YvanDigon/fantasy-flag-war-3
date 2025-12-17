@@ -44,7 +44,7 @@ interface CombatFeedback {
 }
 
 export const PresenterView: React.FC = () => {
-	const { battleUnits, flags, combatEvents, scores, lastScoreEvent } = useSnapshot(globalStore.proxy);
+	const { battleUnits, flags, combatEvents, scores, lastScoreEvent, goldPickups } = useSnapshot(globalStore.proxy);
 	const [showScoreOverlay, setShowScoreOverlay] = React.useState(false);
 	const [currentScoreEvent, setCurrentScoreEvent] = React.useState<typeof lastScoreEvent>(null);
 	const [feedbacks, setFeedbacks] = React.useState<CombatFeedback[]>([]);
@@ -152,10 +152,35 @@ export const PresenterView: React.FC = () => {
 				</div>
 			</div>
 
-			{/* Main Content - Battle Map + Combat Log */}
+			{/* Main Content - Battle Map + Fantasy Log */}
 			<div className="flex flex-1 overflow-hidden">
 				{/* Main Battle Map */}
 				<div className="relative flex-1">
+					{/* Decorative Trees - scattered in empty areas */}
+					<div className="absolute inset-0 pointer-events-none">
+						{/* Bottom-right area (below bot lane) */}
+						<div className="absolute text-4xl opacity-60" style={{ left: '70%', bottom: '18%' }}>🌲</div>
+						<div className="absolute text-3xl opacity-50" style={{ left: '78%', bottom: '22%' }}>🌳</div>
+						<div className="absolute text-4xl opacity-55" style={{ left: '85%', bottom: '16%' }}>🌲</div>
+						
+						{/* Top-left area (above top lane) */}
+						<div className="absolute text-3xl opacity-60" style={{ left: '18%', top: '18%' }}>🌳</div>
+						<div className="absolute text-4xl opacity-50" style={{ left: '25%', top: '22%' }}>🌲</div>
+						<div className="absolute text-3xl opacity-55" style={{ left: '20%', top: '28%' }}>🌳</div>
+						
+						{/* Center scattered trees (avoiding diagonal mid lane) */}
+						<div className="absolute text-3xl opacity-45" style={{ left: '35%', top: '65%' }}>🌲</div>
+						<div className="absolute text-4xl opacity-50" style={{ left: '65%', top: '35%' }}>🌳</div>
+						<div className="absolute text-3xl opacity-55" style={{ left: '30%', top: '40%' }}>🌳</div>
+						<div className="absolute text-4xl opacity-45" style={{ left: '70%', top: '60%' }}>🌲</div>
+						
+						{/* Additional scattered trees */}
+						<div className="absolute text-3xl opacity-50" style={{ left: '55%', top: '25%' }}>🌲</div>
+						<div className="absolute text-3xl opacity-55" style={{ left: '45%', bottom: '30%' }}>🌳</div>
+						<div className="absolute text-4xl opacity-45" style={{ left: '82%', top: '45%' }}>🌲</div>
+						<div className="absolute text-3xl opacity-50" style={{ left: '15%', bottom: '40%' }}>🌳</div>
+					</div>
+					
 					{/* BRIGHT VISIBLE LANES - Connecting castles properly */}
 					<div className="absolute inset-0 pointer-events-none">
 						{/* TOP LANE - Pink/Magenta L-shape (bottom-left → up left side → right along top → top-right) */}
@@ -179,6 +204,18 @@ export const PresenterView: React.FC = () => {
 								height: '8%'
 							}}
 						/>
+						{/* TOP LANE Label */}
+						<div 
+							className="absolute text-white font-bold text-lg drop-shadow-lg"
+							style={{
+								left: '50%',
+								top: '9%',
+								transform: 'translate(-50%, -50%)',
+								textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+							}}
+						>
+							{config.topLane}
+						</div>
 
 						{/* MID LANE - Yellow diagonal (bottom-left → top-right) */}
 						<svg 
@@ -196,6 +233,18 @@ export const PresenterView: React.FC = () => {
 								strokeLinecap="round"
 							/>
 						</svg>
+						{/* MID LANE Label */}
+						<div 
+							className="absolute text-white font-bold text-lg drop-shadow-lg"
+							style={{
+								left: '50%',
+								top: '50%',
+								transform: 'translate(-50%, -50%)',
+								textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+							}}
+						>
+							{config.midLane}
+						</div>
 
 						{/* BOT LANE - Cyan L-shape (bottom-left → right along bottom → up right side → top-right) */}
 						{/* Horizontal section: along the bottom */}
@@ -218,6 +267,18 @@ export const PresenterView: React.FC = () => {
 								height: '85%'
 							}}
 						/>
+						{/* BOT LANE Label */}
+						<div 
+							className="absolute text-white font-bold text-lg drop-shadow-lg"
+							style={{
+								left: '50%',
+								bottom: '9%',
+								transform: 'translate(-50%, 50%)',
+								textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+							}}
+						>
+							{config.botLane}
+						</div>
 					</div>
 
 					{/* TOP LANE Units - L-shaped path */}
@@ -351,10 +412,45 @@ export const PresenterView: React.FC = () => {
 						);
 					})}
 
+					{/* Gold Pickups */}
+					{Object.values(goldPickups)
+						.filter((gold) => !gold.claimed)
+						.map((gold) => {
+							// Calculate position based on lane (gold is at position 50 - middle of lane)
+							let left: string, top: string;
+							const progress = 0.5; // Gold is always at 50% of lane
+							
+							if (gold.lane === 'top') {
+								// Top lane L-shape: first half is vertical, second half is horizontal
+								// At 50%, we're at the corner
+								left = '9%';
+								top = '9%';
+							} else if (gold.lane === 'mid') {
+								// Mid lane diagonal
+								left = `${5 + (progress * 90)}%`;
+								top = `${95 - (progress * 90)}%`;
+							} else {
+								// Bot lane L-shape: first half is horizontal, second half is vertical
+								// At 50%, we're at the corner
+								left = '91%';
+								top = '91%';
+							}
+							
+							return (
+								<div
+									key={gold.id}
+									className="absolute flex flex-col items-center animate-bounce"
+									style={{ left, top, transform: 'translate(-50%, -50%)', zIndex: 15 }}
+								>
+									<div className="text-4xl drop-shadow-lg">💰</div>
+								</div>
+							);
+						})}
+
 					{/* Red Castle (Bottom Left) with flags */}
 					<div className="absolute bottom-4 left-4 flex flex-col items-center">
 						<div className="text-6xl">🏰</div>
-						<div className="font-bold text-red-500">{config.redCastle}</div>
+						<div className="font-bold text-lg text-red-500 drop-shadow-lg" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>{config.redCastle}</div>
 						<div className="mt-2 flex gap-1">
 							{Object.values(flags)
 								.filter((f) => f.team === 'red' && f.status === 'at-castle')
@@ -394,7 +490,7 @@ export const PresenterView: React.FC = () => {
 					{/* Blue Castle (Top Right) with flags */}
 					<div className="absolute right-4 top-4 flex flex-col items-center">
 						<div className="text-6xl">🏰</div>
-						<div className="font-bold text-blue-500">{config.blueCastle}</div>
+						<div className="font-bold text-lg text-blue-500 drop-shadow-lg" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>{config.blueCastle}</div>
 						<div className="mt-2 flex gap-1">
 							{Object.values(flags)
 								.filter((f) => f.team === 'blue' && f.status === 'at-castle')
@@ -453,9 +549,9 @@ export const PresenterView: React.FC = () => {
 					))}
 				</div>
 
-				{/* Combat Log (Right Side) */}
+				{/* Fantasy Log (Right Side) */}
 				<div className="relative w-80 border-l-4 border-bark-700 bg-bark-800 p-4 shadow-lg flex flex-col">
-					<div className="text-lg font-bold text-parchment mb-2">Combat Log</div>
+					<div className="text-lg font-bold text-parchment mb-2">Fantasy Log</div>
 					<div className="flex-1 overflow-y-auto space-y-1 text-sm text-forest-200">
 						{sortedCombatEvents.length === 0 && (
 							<div className="italic opacity-50 text-parchment">No combat events yet...</div>
@@ -513,12 +609,36 @@ export const PresenterView: React.FC = () => {
 											{' '}⚡ dodged away
 										</>
 									)}
+									{event.type === 'flag-grab' && (
+										<>
+											<span className={attacker.team === 'red' ? 'text-red-400' : 'text-blue-400'}>
+												{attacker.stats.name || attacker.stats.type}
+											</span>
+											{' '}🚩 grabbed enemy flag!
+										</>
+									)}
+									{event.type === 'flag-score' && (
+										<>
+											<span className={attacker.team === 'red' ? 'text-red-400' : 'text-blue-400'}>
+												{attacker.stats.name || attacker.stats.type}
+											</span>
+											{' '}🏆 scored with flag!
+										</>
+									)}
+									{event.type === 'gold-pickup' && (
+										<>
+											<span className={attacker.team === 'red' ? 'text-red-400' : 'text-blue-400'}>
+												{attacker.stats.name || attacker.stats.type}
+											</span>
+											{' '}💰 grabbed gold!
+										</>
+									)}
 								</div>
 							);
 						})}
 					</div>
 					
-					{/* Score Overlay - Only covers combat log */}
+					{/* Score Overlay - Only covers fantasy log */}
 					{showScoreOverlay && currentScoreEvent && (
 						<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
 							<div className={`flex flex-col items-center gap-2 rounded-lg p-4 shadow-2xl ${

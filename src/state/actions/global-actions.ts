@@ -4,11 +4,14 @@ import { globalStore } from '../stores/global-store';
 
 export const globalActions = {
 	async startGame() {
-		await kmClient.transact([globalStore], ([globalState]) => {
-			globalState.started = true;
-			globalState.startTimestamp = kmClient.serverTimestamp();
-			globalState.phase = 'intro-preparation';
-			globalState.phaseStartTime = kmClient.serverTimestamp();
+		console.log('🎮 startGame() called');
+		try {
+			await kmClient.transact([globalStore], ([globalState]) => {
+				console.log('📝 Transaction starting, setting started=true');
+				globalState.started = true;
+				globalState.startTimestamp = kmClient.serverTimestamp();
+				globalState.phase = 'intro-preparation';
+				globalState.phaseStartTime = kmClient.serverTimestamp();
 			
 			// Initialize flags
 			const lanes: Lane[] = ['top', 'mid', 'bot'];
@@ -26,7 +29,15 @@ export const globalActions = {
 					};
 				});
 			});
+			
+			// Initialize gold pickups (one per lane at the middle)
+			globalState.goldPickups = {};
 		});
+			console.log('✅ startGame() completed successfully');
+		} catch (error) {
+			console.error('❌ startGame() failed:', error);
+			throw error;
+		}
 	},
 
 	async stopGame() {
@@ -46,6 +57,18 @@ export const globalActions = {
 			globalState.phase = 'battle';
 			globalState.phaseStartTime = kmClient.serverTimestamp();
 			globalState.lastBattleTick = 0; // Set to 0 to allow immediate first tick
+
+			// Spawn gold pickups at the middle of each lane
+			const lanes: Lane[] = ['top', 'mid', 'bot'];
+			lanes.forEach((lane) => {
+				const goldId = `gold-${lane}`;
+				globalState.goldPickups[goldId] = {
+					id: goldId,
+					lane,
+					position: 50, // Middle of the lane
+					claimed: false
+				};
+			});
 
 			// Reset ready states
 			Object.keys(globalState.players).forEach((playerId) => {
@@ -75,10 +98,8 @@ export const globalActions = {
 				}
 			}
 
-// Store player deployments for bot copying (bots copy after all players spawn)
-		globalState.playerDeployments = {};
-
 			// Note: Each player will spawn their own units when they detect phase change
+			// playerDeployments will be populated as players spawn, bots copy after 2 seconds
 		});
 	},
 
@@ -86,6 +107,9 @@ export const globalActions = {
 		await kmClient.transact([globalStore], ([globalState]) => {
 			globalState.phase = 'preparation';
 			globalState.phaseStartTime = kmClient.serverTimestamp();
+
+			// Clear player deployments for next battle
+			globalState.playerDeployments = {};
 
 			// Award points for any units still carrying flags when battle ends
 			Object.values(globalState.battleUnits).forEach((unit) => {
@@ -109,6 +133,7 @@ export const globalActions = {
 			// Clear battle state
 			globalState.battleUnits = {};
 			globalState.combatEvents = {};
+			globalState.goldPickups = {}; // Clear gold pickups for next battle
 
 			// Return flags to castles
 			Object.keys(globalState.flags).forEach((flagId) => {

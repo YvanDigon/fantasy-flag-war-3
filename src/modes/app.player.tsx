@@ -19,11 +19,41 @@ import { useSnapshot } from 'valtio';
 const App: React.FC = () => {
 	const { title } = config;
 	const { name, currentView, team } = useSnapshot(playerStore.proxy);
-	const { phase, players, combatEvents, battleUnits } = useSnapshot(globalStore.proxy);
+	const { phase, players, combatEvents, battleUnits, goldPickups } = useSnapshot(globalStore.proxy);
 	const processedCombatEvents = React.useRef<Set<string>>(new Set());
+	const claimedGoldIds = React.useRef<Set<string>>(new Set());
 
 	useGlobalController();
 	useDocumentTitle(title);
+
+	// Track gold pickups
+	React.useEffect(() => {
+		if (phase !== 'battle') {
+			claimedGoldIds.current.clear();
+			return;
+		}
+
+		// Check for gold claimed by this player's units
+		for (const [goldId, gold] of Object.entries(goldPickups)) {
+			if (!gold.claimed || !gold.claimedBy) continue;
+			if (claimedGoldIds.current.has(goldId)) continue;
+
+			// Check if this gold was claimed by this player's unit
+			const claimingUnit = battleUnits[gold.claimedBy];
+			if (claimingUnit && claimingUnit.playerId === kmClient.id) {
+				claimedGoldIds.current.add(goldId);
+
+				// Award gold to player and track pickup
+				kmClient.transact([playerStore], ([playerState]) => {
+					playerState.gold += config.goldPickupAmount;
+					playerState.goldPickups.push({
+						amount: config.goldPickupAmount,
+						timestamp: kmClient.serverTimestamp()
+					});
+				});
+			}
+		}
+	}, [phase, goldPickups, battleUnits]);
 
 	// Track combat results (kills and deaths)
 	React.useEffect(() => {
@@ -235,6 +265,7 @@ const App: React.FC = () => {
 				// Clear combat results from previous battle
 				playerState.kills = [];
 				playerState.deaths = [];
+				playerState.goldPickups = [];
 				
 				// Clear processed events
 				processedCombatEvents.current.clear();

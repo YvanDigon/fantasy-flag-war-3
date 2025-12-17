@@ -83,6 +83,14 @@ export interface Flag {
 	carrierId?: string; // Unit ID carrying this flag
 }
 
+export interface GoldPickup {
+	id: string;
+	lane: Lane;
+	position: number; // 0 to 100
+	claimed: boolean;
+	claimedBy?: string; // Unit ID that claimed this gold
+}
+
 export interface EvolutionOption {
 	name: string; // AI-generated fantasy name
 	type: SoldierType;
@@ -108,8 +116,10 @@ export interface DeployedUnit {
 export interface CombatEvent {
 	id: string;
 	timestamp: number;
-	type: 'hit' | 'critical' | 'dodge' | 'death';
+	type: 'hit' | 'critical' | 'dodge' | 'death' | 'flag-grab' | 'flag-score' | 'gold-pickup';
 	attackerId: string;
 	defenderId?: string;
 	damage?: number;
+	flagId?: string;
+	goldId?: string;
 }

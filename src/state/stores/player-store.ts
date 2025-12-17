@@ -7,6 +7,11 @@ export interface CombatResult {
 	timestamp: number;
 }
 
+export interface GoldPickupResult {
+	amount: number;
+	timestamp: number;
+}
+
 export interface PlayerState {
 	name: string;
 	currentView:
@@ -29,6 +34,7 @@ export interface PlayerState {
 	readyBonus: boolean; // +1 bonus to attack, defense, speed, critical hit for pressing Ready early
 	kills: CombatResult[]; // Enemies your soldiers killed
 	deaths: CombatResult[]; // Your soldiers killed by enemies
+	goldPickups: GoldPickupResult[]; // Gold bags collected during battle
 }
 
 const initialState: PlayerState = {
@@ -55,7 +61,8 @@ const initialState: PlayerState = {
 	hasDeployedDefender: false,
 	readyBonus: false,
 	kills: [],
-	deaths: []
+	deaths: [],
+	goldPickups: []
 };
 
 export const playerStore = kmClient.localStore<PlayerState>(

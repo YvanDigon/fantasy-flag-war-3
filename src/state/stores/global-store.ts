@@ -4,6 +4,7 @@ import type {
 	CombatEvent,
 	Flag,
 	GamePhase,
+	GoldPickup,
 	Team
 } from '@/types';
 
@@ -31,6 +32,7 @@ export interface GlobalState {
 	// Battle state
 	battleUnits: Record<string, BattleUnit>; // key: unit ID
 	flags: Record<string, Flag>; // key: flag ID
+	goldPickups: Record<string, GoldPickup>; // key: gold ID
 	combatEvents: Record<string, CombatEvent>; // key: timestamp for auto-sort
 	lastBattleTick: number;
 }
@@ -48,6 +50,7 @@ const initialState: GlobalState = {
 	lastScoreEvent: null,
 	battleUnits: {},
 	flags: {},
+	goldPickups: {},
 	combatEvents: {},
 	lastBattleTick: 0
 };

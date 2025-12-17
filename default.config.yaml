@@ -69,6 +69,7 @@ battleWaitMd: 'Your soldiers are fighting! Watch the battle on the presenter scr
 gameLinksTitle: 'Game Links'
 playerLinkLabel: 'Player Link'
 presenterLinkLabel: 'Presenter Link'
+startGameButton: 'Start Game'
 endPreparationButton: 'End Preparation Phase'
 finishBattleButton: 'Finish Battle Phase'
 playersOverview: 'Players Overview'
@@ -89,6 +90,9 @@ defenseDivisor: 2
 typeAdvantageMultiplier: 3
 criticalHitMultiplier: 3
 dodgeMultiplier: 5
+
+# Gold pickup mechanic
+goldPickupAmount: 100
 
 # Combat system explanation
 combatSystemExplanation: 'Melee beats Ranged, Ranged beats Mage, Mage beats Melee — just like rock-paper-scissors!'
