@@ -94,6 +94,15 @@ dodgeMultiplier: 5
 # Gold pickup mechanic
 goldPickupAmount: 100
 
+# Economy settings
+deploySoldierPrice: 100
+evolveSoldierPrice: 100
+evolveStatIncrease: 3
+superEvolveSoldierPrice: 200
+superEvolveStatIncrease: 10
+superEvolveStatDecrease: 3
+goldGenMultiplier: 10
+
 # Combat system explanation
 combatSystemExplanation: 'Melee beats Ranged, Ranged beats Mage, Mage beats Melee — just like rock-paper-scissors!'
 evolutionNotice: 'You can evolve your soldier between battle rounds. Evolving allow you to change class.'

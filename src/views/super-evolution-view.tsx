@@ -41,44 +41,40 @@ function getVisualEffectForName(name: string): string {
 	return 'effect-default';
 }
 
-function generateSuperEvolutionOptions(): SuperEvolutionOption[] {
-	const statOptions: Array<keyof Omit<UnitStats, 'hp' | 'type' | 'name'>> = [
-		'attack',
-		'defense',
-		'speed',
-		'criticalHitRate',
-		'goldGeneration'
-	];
-
-	// Generate 3 options with different stat combinations
-	const options: SuperEvolutionOption[] = [];
-	const usedCombos = new Set<string>();
-
-	while (options.length < 3) {
-		const shuffled = [...statOptions].sort(() => Math.random() - 0.5);
-		const boostStat = shuffled[0];
-		const decreaseStat = shuffled[1];
-		const combo = `${boostStat}-${decreaseStat}`;
-
-		if (!usedCombos.has(combo)) {
-			usedCombos.add(combo);
-			options.push({
-				boostStat,
-				boostAmount: 15,
-				decreaseStat,
-				decreaseAmount: 3
-			});
-		}
-	}
-
-	return options;
-}
-
 export const SuperEvolutionView: React.FC = () => {
 	const { gold, soldierStats } = useSnapshot(playerStore.proxy);
-	const [options] = React.useState<SuperEvolutionOption[]>(() =>
-		generateSuperEvolutionOptions()
-	);
+	const [options] = React.useState<SuperEvolutionOption[]>(() => {
+		const statOptions: Array<keyof Omit<UnitStats, 'hp' | 'type' | 'name'>> = [
+			'attack',
+			'defense',
+			'speed',
+			'criticalHitRate',
+			'goldGeneration'
+		];
+
+		// Generate 3 options with different stat combinations
+		const generatedOptions: SuperEvolutionOption[] = [];
+		const usedCombos = new Set<string>();
+
+		while (generatedOptions.length < 3) {
+			const shuffled = [...statOptions].sort(() => Math.random() - 0.5);
+			const boostStat = shuffled[0];
+			const decreaseStat = shuffled[1];
+			const combo = `${boostStat}-${decreaseStat}`;
+
+			if (!usedCombos.has(combo)) {
+				usedCombos.add(combo);
+				generatedOptions.push({
+					boostStat,
+					boostAmount: config.superEvolveStatIncrease,
+					decreaseStat,
+					decreaseAmount: config.superEvolveStatDecrease
+				});
+			}
+		}
+
+		return generatedOptions;
+	});
 	const [selectedOption, setSelectedOption] = React.useState<
 		SuperEvolutionOption | null
 	>(null);
@@ -97,7 +93,7 @@ export const SuperEvolutionView: React.FC = () => {
 	};
 
 	const handleConfirm = async () => {
-		if (gold < 200 || !selectedOption || !customName.trim()) return;
+		if (gold < config.superEvolveSoldierPrice || !selectedOption || !customName.trim()) return;
 
 		console.log('🎨 Starting super evolution generation...');
 		setIsGenerating(true);
@@ -138,7 +134,7 @@ export const SuperEvolutionView: React.FC = () => {
 
 			// Apply super evolution
 			await kmClient.transact([playerStore], ([playerState]) => {
-				playerState.gold -= 200;
+				playerState.gold -= config.superEvolveSoldierPrice;
 				playerState.superEvolutionTitle = customName;
 				playerState.soldierStats.name = `${customName} ${playerState.soldierStats.name}`;
 				playerState.soldierStats.visualEffect = getVisualEffectForName(customName);
@@ -355,7 +351,7 @@ export const SuperEvolutionView: React.FC = () => {
 			{selectedOption && customName.trim() && (
 				<button
 					onClick={handleConfirm}
-					disabled={gold < 200}
+					disabled={gold < config.superEvolveSoldierPrice}
 					className="rounded-lg bg-purple-600 px-8 py-4 text-xl font-bold text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-400"
 				>
 					{config.confirmSuperEvolution}
@@ -363,7 +359,7 @@ export const SuperEvolutionView: React.FC = () => {
 			)}
 
 			{/* Cost Warning */}
-			{gold < 200 && (
+			{gold < config.superEvolveSoldierPrice && (
 				<div className="rounded-lg bg-red-100 p-4 text-center text-red-700">
 					{config.notEnoughGold}
 				</div>

@@ -28,8 +28,8 @@ export const CommanderView: React.FC = () => {
 	const [isDefenderDeployment, setIsDefenderDeployment] = React.useState(false);
 
 	const isReady = players[kmClient.id]?.ready || false;
-	const canAffordDeploy = gold >= 100 && !isReady;
-	const canAffordEvolve = gold >= 100 && !isReady;
+	const canAffordDeploy = gold >= config.deploySoldierPrice && !isReady;
+	const canAffordEvolve = gold >= config.evolveSoldierPrice && !isReady;
 
 	// Count deployments per lane
 	const deploymentCounts = React.useMemo(() => {
@@ -64,7 +64,7 @@ export const CommanderView: React.FC = () => {
 		if (!isDefenderDeployment && !selectedLane) return;
 
 		await kmClient.transact([playerStore], ([playerState]) => {
-			playerState.gold -= 100;
+			playerState.gold -= config.deploySoldierPrice;
 			const timestamp = kmClient.serverTimestamp();
 			playerState.deployedUnits[timestamp.toString()] = {
 				lane: selectedLane,

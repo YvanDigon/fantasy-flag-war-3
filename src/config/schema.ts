@@ -95,6 +95,14 @@ export const schema = z.object({
 	dodgeMultiplier: z.number().default(1),
 	// Gold pickup mechanic
 	goldPickupAmount: z.number().default(100),
+	// Economy settings
+	deploySoldierPrice: z.number().default(100),
+	evolveSoldierPrice: z.number().default(100),
+	evolveStatIncrease: z.number().default(3),
+	superEvolveSoldierPrice: z.number().default(200),
+	superEvolveStatIncrease: z.number().default(15),
+	superEvolveStatDecrease: z.number().default(3),
+	goldGenMultiplier: z.number().default(10),
 	// Combat system explanation
 	combatSystemExplanation: z.string().default('Melee beats Ranged, Ranged beats Mage, Mage beats Melee — just like rock-paper-scissors!'),
 	evolutionNotice: z.string().default('You can evolve your soldier between battle rounds.')

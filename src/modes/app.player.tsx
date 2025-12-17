@@ -246,7 +246,7 @@ const App: React.FC = () => {
 				// Only grant gold if player actually participated in the battle
 				if (participatedInBattle.current) {
 					const baseGold = 200;
-					const bonusGold = playerState.soldierStats.goldGeneration * 10;
+					const bonusGold = playerState.soldierStats.goldGeneration * config.goldGenMultiplier;
 					playerState.gold += baseGold + bonusGold;
 				}
 				

@@ -116,10 +116,10 @@ export const EvolutionView: React.FC = () => {
 	};
 
 	const handleConfirm = async (option: EvolutionOption) => {
-		if (gold < 100) return;
+		if (gold < config.evolveSoldierPrice) return;
 
 		await kmClient.transact([playerStore], ([playerState]) => {
-			playerState.gold -= 100;
+			playerState.gold -= config.evolveSoldierPrice;
 			playerState.soldierStats.type = option.type;
 			// Prefix with super evolution title if it exists
 			playerState.soldierStats.name = playerState.superEvolutionTitle 
@@ -140,8 +140,8 @@ export const EvolutionView: React.FC = () => {
 // Apply stat boosts
 		const stat1 = option.statBoosts.stat1;
 		const stat2 = option.statBoosts.stat2;
-		playerState.soldierStats[stat1] = (playerState.soldierStats[stat1] as number) + 3;
-		playerState.soldierStats[stat2] = (playerState.soldierStats[stat2] as number) + 3;
+		playerState.soldierStats[stat1] = (playerState.soldierStats[stat1] as number) + config.evolveStatIncrease;
+		playerState.soldierStats[stat2] = (playerState.soldierStats[stat2] as number) + config.evolveStatIncrease;
 		
 		// Increment evolution level
 		playerState.evolutionLevel = playerState.evolutionLevel + 1;
@@ -224,7 +224,7 @@ export const EvolutionView: React.FC = () => {
 							playerState.currentView = 'super-evolution';
 						});
 					}}
-					disabled={gold < 200}
+					disabled={gold < config.superEvolveSoldierPrice}
 					className="rounded-lg bg-purple-600 px-8 py-4 text-xl font-bold text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-400"
 				>
 					{config.superEvolutionButton}
