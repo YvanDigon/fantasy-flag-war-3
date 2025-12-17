@@ -1,6 +1,9 @@
 import { config } from '@/config';
+import { generateLink } from '@/kit/generate-link';
+import { kmClient } from '@/services/km-client';
 import { globalStore } from '@/state/stores/global-store';
 import type { Lane } from '@/types';
+import { KmQrCode } from '@kokimoki/shared';
 import * as React from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -536,6 +539,18 @@ export const PresenterView: React.FC = () => {
 							</div>
 						</div>
 					)}
+					
+					{/* QR Code for joining */}
+					<div className="mt-4 border-t-2 border-bark-700 pt-4">
+						<div className="text-sm font-bold text-parchment mb-2 text-center">Scan to Join</div>
+						<div className="flex justify-center">
+							<KmQrCode 
+								data={generateLink(kmClient.clientContext.playerCode, { mode: 'player' })} 
+								size={150} 
+								interactive={false}
+							/>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

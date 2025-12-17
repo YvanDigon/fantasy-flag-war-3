@@ -69,6 +69,19 @@ export const IntroPreparationView: React.FC = () => {
 				))}
 			</div>
 
+			{/* Combat System Explanation */}
+			<div className="rounded-lg bg-bark-100 p-4 text-center">
+				<p className="text-sm leading-relaxed text-bark-700">
+					<strong>⚔️ {config.meleeType}</strong> beats <strong>🏹 {config.rangedType}</strong>,{' '}
+					<strong>🏹 {config.rangedType}</strong> beats <strong>🧙 {config.mageType}</strong>,{' '}
+					<strong>🧙 {config.mageType}</strong> beats <strong>⚔️ {config.meleeType}</strong> — just like rock-paper-scissors!
+					<br />
+					<span className="mt-2 inline-block text-xs italic">
+						{config.evolutionNotice}
+					</span>
+				</p>
+			</div>
+
 			<button
 				onClick={handleConfirm}
 				disabled={!selectedType}

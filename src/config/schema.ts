@@ -91,7 +91,11 @@ export const schema = z.object({
 	defenseDivisor: z.number().default(2),
 	typeAdvantageMultiplier: z.number().default(3),
 	criticalHitMultiplier: z.number().default(3),
-	dodgeMultiplier: z.number().default(1)
+	dodgeMultiplier: z.number().default(1),
+
+	// Combat system explanation
+	combatSystemExplanation: z.string().default('Melee beats Ranged, Ranged beats Mage, Mage beats Melee — just like rock-paper-scissors!'),
+	evolutionNotice: z.string().default('You can evolve your soldier between battle rounds.')
 });
 
 export type Config = z.infer<typeof schema>;

@@ -35,18 +35,40 @@ const App: React.FC = () => {
 
 				<HostPresenterLayout.Main>
 					<div className="rounded-lg border border-gray-200 bg-white shadow-md">
-						<div className="flex flex-col gap-2 p-6">
-							<h2 className="text-xl font-bold">{config.playerLinkLabel}</h2>
+					<div className="flex flex-col gap-6 p-8 md:flex-row md:items-center">
+						<div className="flex-1 text-center md:text-left">
+							<h1 className="mb-3 text-5xl font-bold text-bark-800">
+								Fantasy Flag War
+							</h1>
+							<p className="text-xl text-bark-600">
+								Prepare your army, attack your opponent's castle, bring back their flags!
+							</p>
+						</div>
+						<div className="flex flex-col items-center gap-3">
 							<KmQrCode data={playerLink} size={200} interactive={false} />
-
-							<a
-								href={playerLink}
-								target="_blank"
-								rel="noreferrer"
-								className="break-all text-blue-600 underline hover:text-blue-700"
-							>
-								{config.playerLinkLabel}
-							</a>
+							<div className="text-center">
+								<div className="text-sm font-semibold text-bark-700">
+									Scan to Join
+								</div>
+								<div className="mt-2 flex gap-3">
+									<img
+										src="https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153228778.png"
+										alt="Warrior"
+										className="h-12 w-12 object-contain"
+									/>
+									<img
+										src="https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153223922.png"
+										alt="Sorcerer"
+										className="h-12 w-12 object-contain"
+									/>
+									<img
+										src="https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153218722.png"
+										alt="Archer"
+										className="h-12 w-12 object-contain"
+									/>
+								</div>
+							</div>
+						</div>
 						</div>
 					</div>
 

@@ -137,8 +137,14 @@ export const EvolutionView: React.FC = () => {
 				playerState.soldierStats.sprite = SOLDIER_IMAGES[option.type];
 			}
 			
-			playerState.soldierStats[option.statBoosts.stat1] += 3;
-			playerState.soldierStats[option.statBoosts.stat2] += 3;
+// Apply stat boosts
+		const stat1 = option.statBoosts.stat1;
+		const stat2 = option.statBoosts.stat2;
+		playerState.soldierStats[stat1] = (playerState.soldierStats[stat1] as number) + 3;
+		playerState.soldierStats[stat2] = (playerState.soldierStats[stat2] as number) + 3;
+		
+		// Increment evolution level
+		playerState.evolutionLevel = playerState.evolutionLevel + 1;
 			
 			// Regenerate evolution options for next time
 			playerState.currentEvolutionOptions = generateEvolutionOptions();

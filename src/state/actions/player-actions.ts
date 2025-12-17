@@ -14,6 +14,7 @@ export const playerActions = {
 			[playerStore, globalStore],
 			([playerState, globalState]) => {
 				playerState.name = name;
+				playerState.currentView = 'team-selection';
 				globalState.players[kmClient.id] = {
 					name,
 					team: null,

@@ -15,8 +15,13 @@ const SOLDIER_IMAGES: Record<SoldierType, string> = {
 		'https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153218722.png'
 };
 
+const getStars = (value: number): string => {
+	if (value < 5) return '';
+	return ' ' + '⭐'.repeat(Math.floor(value / 5));
+};
+
 export const CommanderView: React.FC = () => {
-	const { gold, soldierStats, deployedUnits, hasDeployedDefender } = useSnapshot(playerStore.proxy);
+	const { gold, soldierStats, deployedUnits, hasDeployedDefender, readyBonus, team, evolutionLevel, hasSuperEvolved } = useSnapshot(playerStore.proxy);
 	const { players } = useSnapshot(globalStore.proxy);
 	const [showLaneSelector, setShowLaneSelector] = React.useState(false);
 	const [selectedLane, setSelectedLane] = React.useState<Lane | null>(null);
@@ -25,6 +30,34 @@ export const CommanderView: React.FC = () => {
 	const isReady = players[kmClient.id]?.ready || false;
 	const canAffordDeploy = gold >= 100 && !isReady;
 	const canAffordEvolve = gold >= 100 && !isReady;
+
+	// Count deployments per lane
+	const deploymentCounts = React.useMemo(() => {
+		const counts = { top: 0, mid: 0, bot: 0 };
+		Object.values(deployedUnits).forEach((unit) => {
+			if (unit.lane && !unit.isDefender) {
+				counts[unit.lane]++;
+			}
+		});
+		return counts;
+	}, [deployedUnits]);
+
+	// Generate deployment indicator (person emojis)
+	const getDeploymentIndicator = (lane: Lane) => {
+		const count = deploymentCounts[lane];
+		if (count === 0) return '';
+		if (count <= 3) return ' ' + '👤'.repeat(count);
+		return ' 👤👤👤+';
+	};
+
+	// Calculate stats with ready bonus
+	const effectiveAttack = soldierStats.attack + (readyBonus ? 1 : 0);
+	const effectiveDefense = soldierStats.defense + (readyBonus ? 1 : 0);
+	const effectiveSpeed = soldierStats.speed + (readyBonus ? 1 : 0);
+	const effectiveCriticalHit = soldierStats.criticalHitRate + (readyBonus ? 1 : 0);
+
+	// Calculate level display
+	const levelDisplay = `Lvl ${evolutionLevel}${hasSuperEvolved ? '+' : ''}`;
 
 	const handleDeploy = async () => {
 		if (!canAffordDeploy) return;
@@ -58,10 +91,12 @@ export const CommanderView: React.FC = () => {
 	};
 
 	const handleReady = async () => {
-		await kmClient.transact([globalStore], ([globalState]) => {
+		await kmClient.transact([globalStore, playerStore], ([globalState, playerState]) => {
 			if (globalState.players[kmClient.id]) {
 				globalState.players[kmClient.id].ready = true;
 			}
+			// Grant ready bonus
+			playerState.readyBonus = true;
 		});
 	};
 
@@ -76,7 +111,12 @@ export const CommanderView: React.FC = () => {
 				</div>
 			</div>
 
-			{/* Soldier Stats */}
+			{!canAffordDeploy && !canAffordEvolve && (
+				<div className="rounded-lg bg-gray-100 p-4 text-center text-gray-700">
+					You don't have enough gold to deploy or evolve. Please get ready.
+				</div>
+			)}
+
 			<div className="rounded-lg border-2 border-gray-300 bg-white p-6">
 				<div className="mb-4 flex items-center gap-4">
 					<img
@@ -86,96 +126,150 @@ export const CommanderView: React.FC = () => {
 					/>
 					<div className="flex-1">
 						<h2 className="mb-3 text-2xl font-bold text-bark-800">
-							{soldierStats.name}
+							{soldierStats.name} <span className="text-lg text-bark-600">{levelDisplay}</span>
 						</h2>
 						<div className="grid grid-cols-2 gap-2 text-sm">
 							<div>
-								<strong>{config.type}:</strong> {soldierStats.type}
+								<strong>{config.type}:</strong> {soldierStats.type === 'melee' ? '⚔️' : soldierStats.type === 'mage' ? '🧙' : '🏹'} {soldierStats.type}
 							</div>
 							<div>
-								<strong>{config.hp}:</strong> {soldierStats.hp}
+								<strong>{config.attack}:</strong> {effectiveAttack}{readyBonus && <span className="text-green-600"> (+1)</span>}{getStars(effectiveAttack)}
 							</div>
 							<div>
-								<strong>{config.attack}:</strong> {soldierStats.attack}
+								<strong>{config.defense}:</strong> {effectiveDefense}{readyBonus && <span className="text-green-600"> (+1)</span>}{getStars(effectiveDefense)}
 							</div>
 							<div>
-								<strong>{config.defense}:</strong> {soldierStats.defense}
+								<strong>{config.speed}:</strong> {effectiveSpeed}{readyBonus && <span className="text-green-600"> (+1)</span>}{getStars(effectiveSpeed)}
 							</div>
 							<div>
-								<strong>{config.speed}:</strong> {soldierStats.speed}
+								<strong>{config.criticalHitRate}:</strong> {effectiveCriticalHit}{readyBonus && <span className="text-green-600"> (+1)</span>}{getStars(effectiveCriticalHit)}
 							</div>
 							<div>
-								<strong>{config.criticalHitRate}:</strong>{' '}
-								{soldierStats.criticalHitRate}
-							</div>
-							<div>
-								<strong>{config.goldGeneration}:</strong>{' '}
-								{soldierStats.goldGeneration}
+								<strong>{config.goldGeneration}:</strong> {soldierStats.goldGeneration}{getStars(soldierStats.goldGeneration)}
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 
-			{/* Actions */}
 			<div className="flex flex-col gap-4">
 				{showLaneSelector ? (
 					<div className="rounded-lg border-2 border-blue-600 bg-blue-50 p-4">
 						<h3 className="mb-3 text-lg font-bold">{config.selectLane}</h3>
 						<div className="grid grid-cols-2 gap-2">
-							<button
-								onClick={() => {
-									setSelectedLane('top');
-									setIsDefenderDeployment(false);
-								}}
-								className={`rounded px-4 py-3 font-bold text-white transition ${
-									selectedLane === 'top' && !isDefenderDeployment
-										? 'bg-blue-700 ring-4 ring-blue-300'
-										: 'bg-blue-600 hover:bg-blue-700'
-								}`}
-							>
-								{config.topLane}
-							</button>
-							<button
-								onClick={() => {
-									setSelectedLane('mid');
-									setIsDefenderDeployment(false);
-								}}
-								className={`rounded px-4 py-3 font-bold text-white transition ${
-									selectedLane === 'mid' && !isDefenderDeployment
-										? 'bg-blue-700 ring-4 ring-blue-300'
-										: 'bg-blue-600 hover:bg-blue-700'
-								}`}
-							>
-								{config.midLane}
-							</button>
-							<button
-								onClick={() => {
-									setSelectedLane('bot');
-									setIsDefenderDeployment(false);
-								}}
-								className={`rounded px-4 py-3 font-bold text-white transition ${
-									selectedLane === 'bot' && !isDefenderDeployment
-										? 'bg-blue-700 ring-4 ring-blue-300'
-										: 'bg-blue-600 hover:bg-blue-700'
-								}`}
-							>
-								{config.botLane}
-							</button>
-							<button
-								onClick={() => {
-									setSelectedLane(null);
-									setIsDefenderDeployment(true);
-								}}
-								disabled={hasDeployedDefender}
-								className={`rounded px-4 py-3 font-bold text-white transition ${
-									isDefenderDeployment
-										? 'bg-orange-700 ring-4 ring-orange-300'
-										: 'bg-orange-600 hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-gray-400'
-								}`}
-							>
-								{config.defendCastleButton} {hasDeployedDefender && '✓'}
-							</button>
+							{team === 'blue' ? (
+								<>
+									<button
+										onClick={() => {
+											setSelectedLane('top');
+											setIsDefenderDeployment(false);
+										}}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											selectedLane === 'top' && !isDefenderDeployment
+												? 'bg-fuchsia-700 ring-4 ring-fuchsia-300'
+												: 'bg-fuchsia-600 hover:bg-fuchsia-700'
+										}`}
+									>
+										{config.topLane}{getDeploymentIndicator('top')}
+									</button>
+									<button
+										onClick={() => {
+											setSelectedLane(null);
+											setIsDefenderDeployment(true);
+										}}
+										disabled={hasDeployedDefender}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											isDefenderDeployment
+												? 'bg-blue-700 ring-4 ring-blue-300'
+												: 'bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400'
+										}`}
+									>
+										{config.defendCastleButton} {hasDeployedDefender && '✓'}
+									</button>
+									<button
+										onClick={() => {
+											setSelectedLane('mid');
+											setIsDefenderDeployment(false);
+										}}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											selectedLane === 'mid' && !isDefenderDeployment
+												? 'bg-yellow-700 ring-4 ring-yellow-300'
+												: 'bg-yellow-600 hover:bg-yellow-700'
+										}`}
+									>
+										{config.midLane}{getDeploymentIndicator('mid')}
+									</button>
+									<button
+										onClick={() => {
+											setSelectedLane('bot');
+											setIsDefenderDeployment(false);
+										}}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											selectedLane === 'bot' && !isDefenderDeployment
+												? 'bg-teal-700 ring-4 ring-teal-300'
+												: 'bg-teal-600 hover:bg-teal-700'
+										}`}
+									>
+										{config.botLane}{getDeploymentIndicator('bot')}
+									</button>
+								</>
+							) : (
+								<>
+									<button
+										onClick={() => {
+											setSelectedLane('top');
+											setIsDefenderDeployment(false);
+										}}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											selectedLane === 'top' && !isDefenderDeployment
+												? 'bg-fuchsia-700 ring-4 ring-fuchsia-300'
+												: 'bg-fuchsia-600 hover:bg-fuchsia-700'
+										}`}
+									>
+										{config.topLane}{getDeploymentIndicator('top')}
+									</button>
+									<button
+										onClick={() => {
+											setSelectedLane('mid');
+											setIsDefenderDeployment(false);
+										}}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											selectedLane === 'mid' && !isDefenderDeployment
+												? 'bg-yellow-700 ring-4 ring-yellow-300'
+												: 'bg-yellow-600 hover:bg-yellow-700'
+										}`}
+									>
+										{config.midLane}{getDeploymentIndicator('mid')}
+									</button>
+									<button
+										onClick={() => {
+											setSelectedLane(null);
+											setIsDefenderDeployment(true);
+										}}
+										disabled={hasDeployedDefender}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											isDefenderDeployment
+												? 'bg-red-700 ring-4 ring-red-300'
+												: 'bg-red-600 hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-400'
+										}`}
+									>
+										{config.defendCastleButton} {hasDeployedDefender && '✓'}
+									</button>
+									<button
+										onClick={() => {
+											setSelectedLane('bot');
+											setIsDefenderDeployment(false);
+										}}
+										className={`rounded px-4 py-3 font-bold text-white transition ${
+											selectedLane === 'bot' && !isDefenderDeployment
+												? 'bg-teal-700 ring-4 ring-teal-300'
+												: 'bg-teal-600 hover:bg-teal-700'
+										}`}
+									>
+										{config.botLane}{getDeploymentIndicator('bot')}
+									</button>
+								</>
+							)}
 						</div>
 						
 						<button
@@ -233,7 +327,6 @@ export const CommanderView: React.FC = () => {
 				)}
 			</div>
 
-			{/* Deployed Units */}
 			{deployedUnitsArray.length > 0 && (
 				<div className="rounded-lg border-2 border-gray-300 bg-white p-4">
 					<h3 className="mb-2 text-lg font-bold">{config.deployedUnits}</h3>
@@ -247,14 +340,7 @@ export const CommanderView: React.FC = () => {
 				</div>
 			)}
 
-			{/* Combat History */}
 			<CombatHistory />
-
-			{!canAffordDeploy && !canAffordEvolve && (
-				<div className="rounded-lg bg-red-100 p-4 text-center text-red-700">
-					{config.notEnoughGold}
-				</div>
-			)}
 		</div>
 	);
 };

@@ -111,6 +111,9 @@ const App: React.FC = () => {
 		}
 	}, [phase, name, team]);
 
+	// Track if player participated in the current battle
+	const participatedInBattle = React.useRef(false);
+
 	// Sync player view with game phase and spawn units
 	React.useEffect(() => {
 		if (phase === 'battle' && currentView !== 'battle-wait') {
@@ -131,8 +134,15 @@ const App: React.FC = () => {
 				
 				// Check if player has deployed units to spawn
 				if (!playerState.team || Object.keys(playerState.deployedUnits).length === 0) {
+					participatedInBattle.current = false; // Mark as not participated
 					return; // Nothing to spawn
 				}
+				
+				// Mark that this player participated in the battle
+				participatedInBattle.current = true;
+				
+				// Store player's units for bot copying
+				const playerUnits: BattleUnit[] = [];
 				
 				// Spawn each deployed unit
 				Object.values(playerState.deployedUnits).forEach((deployedUnit) => {
@@ -153,13 +163,21 @@ const App: React.FC = () => {
 						? Math.max(0, basePosition + randomOffset)
 						: Math.min(100, basePosition + randomOffset);
 
-					// Create stats with 2x defense for defenders
+					// Create stats with ready bonus if applicable
 					const unitStats = { ...playerState.soldierStats };
+					if (playerState.readyBonus) {
+						unitStats.attack += 1;
+						unitStats.defense += 1;
+						unitStats.speed += 1;
+						unitStats.criticalHitRate += 1;
+					}
+					
+					// Apply 2x defense for defenders
 					if (deployedUnit.isDefender) {
 						unitStats.defense *= 2;
 					}
 
-					globalState.battleUnits[unitId] = {
+					const battleUnit: BattleUnit = {
 						id: unitId,
 						playerId,
 						team: playerState.team,
@@ -174,7 +192,18 @@ const App: React.FC = () => {
 						inCombatWith: undefined,
 						isDefender: deployedUnit.isDefender
 					};
+					
+					globalState.battleUnits[unitId] = battleUnit;
+					playerUnits.push(battleUnit);
 				});
+				
+				// Store deployment for bot copying
+				if (playerUnits.length > 0) {
+					globalState.playerDeployments[playerId] = {
+						team: playerState.team,
+						units: playerUnits
+					};
+				}
 				
 				// Clear deployed units after spawning
 				playerState.deployedUnits = {};
@@ -184,15 +213,24 @@ const App: React.FC = () => {
 			
 			// Grant gold when transitioning from battle to preparation and regenerate evolution options
 			kmClient.transact([globalStore, playerStore], ([globalState, playerState]) => {
-				const baseGold = 200;
-				const bonusGold = playerState.soldierStats.goldGeneration * 10;
-				playerState.gold += baseGold + bonusGold;
+				// Only grant gold if player actually participated in the battle
+				if (participatedInBattle.current) {
+					const baseGold = 200;
+					const bonusGold = playerState.soldierStats.goldGeneration * 10;
+					playerState.gold += baseGold + bonusGold;
+				}
+				
+				// Reset participation flag for next battle
+				participatedInBattle.current = false;
 				
 				// Regenerate evolution options for the new preparation phase
 				playerState.currentEvolutionOptions = null;
 				
 				// Reset defender flag for new preparation phase
 				playerState.hasDeployedDefender = false;
+				
+				// Clear ready bonus (temporary 1 round bonus)
+				playerState.readyBonus = false;
 				
 				// Clear combat results from previous battle
 				playerState.kills = [];

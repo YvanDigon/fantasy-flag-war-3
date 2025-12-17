@@ -15,11 +15,20 @@ const SOLDIER_IMAGES: Record<SoldierType, string> = {
 };
 
 export const BattleWaitView: React.FC = () => {
-	const { soldierStats, team } = useSnapshot(playerStore.proxy);
+	const { soldierStats, team, readyBonus, evolutionLevel, hasSuperEvolved } = useSnapshot(playerStore.proxy);
 	
 	const getUnitEmoji = (type: SoldierType) => {
 		return type === 'melee' ? '⚔️' : type === 'mage' ? '🧙' : '🏹';
 	};
+
+	// Calculate effective stats with ready bonus
+	const effectiveAttack = soldierStats.attack + (readyBonus ? 1 : 0);
+	const effectiveDefense = soldierStats.defense + (readyBonus ? 1 : 0);
+	const effectiveSpeed = soldierStats.speed + (readyBonus ? 1 : 0);
+	const effectiveCriticalHit = soldierStats.criticalHitRate + (readyBonus ? 1 : 0);
+
+	// Calculate level display
+	const levelDisplay = `Lvl ${evolutionLevel}${hasSuperEvolved ? '+' : ''}`;
 
 	return (
 		<div className="flex w-full max-w-2xl flex-col items-center gap-6 text-center">
@@ -41,7 +50,7 @@ export const BattleWaitView: React.FC = () => {
 						className={`h-32 w-32 object-contain ${soldierStats.visualEffect || 'effect-default'}`}
 					/>
 					<h2 className="text-2xl font-bold text-bark-800">
-						{getUnitEmoji(soldierStats.type)} {soldierStats.name}
+						{getUnitEmoji(soldierStats.type)} {soldierStats.name} <span className="text-lg text-bark-600">{levelDisplay}</span>
 					</h2>
 					<p className="text-sm text-bark-600">{soldierStats.type.charAt(0).toUpperCase() + soldierStats.type.slice(1)}</p>
 				</div>
@@ -53,19 +62,31 @@ export const BattleWaitView: React.FC = () => {
 					</div>
 					<div className="rounded bg-white p-2">
 						<div className="font-semibold text-bark-700">{config.attack}</div>
-						<div className="text-lg font-bold">{soldierStats.attack}</div>
+						<div className="text-lg font-bold">
+							{effectiveAttack}
+							{readyBonus && <span className="ml-1 text-sm text-green-600">(+1)</span>}
+						</div>
 					</div>
 					<div className="rounded bg-white p-2">
 						<div className="font-semibold text-bark-700">{config.defense}</div>
-						<div className="text-lg font-bold">{soldierStats.defense}</div>
+						<div className="text-lg font-bold">
+							{effectiveDefense}
+							{readyBonus && <span className="ml-1 text-sm text-green-600">(+1)</span>}
+						</div>
 					</div>
 					<div className="rounded bg-white p-2">
 						<div className="font-semibold text-bark-700">{config.speed}</div>
-						<div className="text-lg font-bold">{soldierStats.speed}</div>
+						<div className="text-lg font-bold">
+							{effectiveSpeed}
+							{readyBonus && <span className="ml-1 text-sm text-green-600">(+1)</span>}
+						</div>
 					</div>
 					<div className="rounded bg-white p-2">
 						<div className="font-semibold text-bark-700">{config.criticalHitRate}</div>
-						<div className="text-lg font-bold">{soldierStats.criticalHitRate}%</div>
+						<div className="text-lg font-bold">
+							{effectiveCriticalHit}%
+							{readyBonus && <span className="ml-1 text-sm text-green-600">(+1)</span>}
+						</div>
 					</div>
 					<div className="rounded bg-white p-2">
 						<div className="font-semibold text-bark-700">{config.goldGeneration}</div>

@@ -87,7 +87,13 @@ export class BattleSimulation {
 			return false;
 		}
 
-		const dodgeChance = defenderStats.speed * config.dodgeMultiplier;
+		// Dodge based on speed difference - must be faster to dodge
+		const speedDifference = defenderStats.speed - attackerStats.speed;
+		if (speedDifference <= 0) {
+			return false; // Cannot dodge if slower or equal speed
+		}
+
+		const dodgeChance = speedDifference * config.dodgeMultiplier;
 		return Math.random() * 100 < dodgeChance;
 	}
 

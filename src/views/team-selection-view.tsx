@@ -7,8 +7,33 @@ import * as React from 'react';
 
 export const TeamSelectionView: React.FC = () => {
 	const handleTeamSelect = async (team: Team | 'random') => {
-		const selectedTeam: Team =
-			team === 'random' ? (Math.random() < 0.5 ? 'red' : 'blue') : team;
+		let selectedTeam: Team;
+
+		if (team === 'random') {
+			// Count players on each team (excluding the current player)
+			const players = globalStore.proxy.players;
+			let redCount = 0;
+			let blueCount = 0;
+
+			Object.entries(players).forEach(([playerId, player]) => {
+				if (playerId !== kmClient.id && player.team === 'red') {
+					redCount++;
+				} else if (playerId !== kmClient.id && player.team === 'blue') {
+					blueCount++;
+				}
+			});
+
+			// Assign to team with fewer players, or randomly if equal
+			if (redCount < blueCount) {
+				selectedTeam = 'red';
+			} else if (blueCount < redCount) {
+				selectedTeam = 'blue';
+			} else {
+				selectedTeam = Math.random() < 0.5 ? 'red' : 'blue';
+			}
+		} else {
+			selectedTeam = team;
+		}
 
 		await kmClient.transact(
 			[playerStore, globalStore],

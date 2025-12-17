@@ -75,57 +75,8 @@ export const globalActions = {
 				}
 			}
 
-			// Spawn bot units
-			const soldierTypes = ['melee', 'mage', 'ranged'] as const;
-			const lanes: Lane[] = ['top', 'mid', 'bot'];
-			
-			Object.entries(globalState.bots).forEach(([botId, bot]) => {
-				// Random class for this bot (same for all 3 units)
-				const botClass = soldierTypes[Math.floor(Math.random() * soldierTypes.length)];
-				
-				const botSprite = botClass === 'melee'
-					? 'https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153228778.png'
-					: botClass === 'mage'
-						? 'https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153223922.png'
-						: 'https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153218722.png';
-				
-				// Deploy one soldier on each lane
-				lanes.forEach((lane) => {
-					const unitId = `${botId}-${lane}`;
-					
-					// Add small random offset to prevent perfect overlap (±2 position units)
-					const randomOffset = (Math.random() * 4) - 2;
-					const basePosition = bot.team === 'red' ? 0 : 100;
-					const startPosition = bot.team === 'red' 
-						? Math.max(0, basePosition + randomOffset)
-						: Math.min(100, basePosition + randomOffset);
-					
-					globalState.battleUnits[unitId] = {
-						id: unitId,
-						playerId: botId,
-						team: bot.team,
-						lane,
-						stats: {
-							hp: 100,
-							type: botClass,
-							name: `Bot ${bot.botNumber} ${botClass}`,
-							attack: 5,
-							defense: 5,
-							speed: 5,
-							criticalHitRate: 5,
-							goldGeneration: 5
-						},
-						currentHp: 100,
-						position: startPosition,
-						movingTowardEnemy: true,
-						carryingFlag: false,
-						isDead: false,
-						sprite: botSprite,
-						inCombatWith: undefined,
-						isDefender: false
-					};
-				});
-			});
+// Store player deployments for bot copying (bots copy after all players spawn)
+		globalState.playerDeployments = {};
 
 			// Note: Each player will spawn their own units when they detect phase change
 		});

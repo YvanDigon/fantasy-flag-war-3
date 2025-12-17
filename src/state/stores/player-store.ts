@@ -22,9 +22,11 @@ export interface PlayerState {
 	deployedUnits: Record<string, DeployedUnit>; // key: timestamp for tracking
 	hasSelectedStartingSoldier: boolean;
 	hasSuperEvolved: boolean;
+	evolutionLevel: number; // Number of regular evolutions done
 	currentEvolutionOptions: EvolutionOption[] | null;
 	superEvolutionTitle: string | null;
 	hasDeployedDefender: boolean;
+	readyBonus: boolean; // +1 bonus to attack, defense, speed, critical hit for pressing Ready early
 	kills: CombatResult[]; // Enemies your soldiers killed
 	deaths: CombatResult[]; // Your soldiers killed by enemies
 }
@@ -47,9 +49,11 @@ const initialState: PlayerState = {
 	deployedUnits: {},
 	hasSelectedStartingSoldier: false,
 	hasSuperEvolved: false,
+	evolutionLevel: 0,
 	currentEvolutionOptions: null,
 	superEvolutionTitle: null,
 	hasDeployedDefender: false,
+	readyBonus: false,
 	kills: [],
 	deaths: []
 };

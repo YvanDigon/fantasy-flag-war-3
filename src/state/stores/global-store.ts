@@ -16,6 +16,7 @@ export interface GlobalState {
 		{ name: string; team: Team | null; ready: boolean }
 	>;
 	bots: Record<string, { team: Team; botNumber: number }>; // key: bot ID
+	playerDeployments: Record<string, { team: Team; units: BattleUnit[] }>; // Track player deployments for bot copying
 	// Game state
 	phase: GamePhase;
 	phaseStartTime: number;
@@ -40,6 +41,7 @@ const initialState: GlobalState = {
 	startTimestamp: 0,
 	players: {},
 	bots: {},
+	playerDeployments: {},
 	phase: 'intro-preparation',
 	phaseStartTime: 0,
 	scores: { red: 0, blue: 0 },
