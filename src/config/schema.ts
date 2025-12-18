@@ -48,10 +48,18 @@ export const schema = z.object({
 	goldGeneration: z.string().default('Gold Gen'),
 	type: z.string().default('Type'),
 
+	// Stat info descriptions
+	typeInfo: z.string().default('Your {type} soldier is strong against {strongAgainst} and weak against {weakAgainst}.'),
+	attackInfo: z.string().default('Determines how much damage your soldier deals. Base damage = Attack * {attackMultiplier}, modified by type advantage.'),
+	defenseInfo: z.string().default('Reduces incoming damage by subtracting Defense / {defenseDivisor} from enemy attacks.'),
+	speedInfo: z.string().default('Determines how fast your soldier moves across the battlefield and the chance to dodge attacks from slower enemies (Speed * {dodgeMultiplier}% dodge chance).'),
+	criticalHitInfo: z.string().default('Each point gives a chance to deal a devastating blow. Critical hits multiply damage by {criticalHitMultiplier}x.'),
+	goldGenerationInfo: z.string().default('Generates additional gold at the end of each battle phase. Earns {goldGenMultiplier} gold per point.'),
+
 	// Evolution screen
 	evolutionTitle: z.string().default('Choose Evolution'),
 	evolutionCost: z.string().default('Cost: 100 Gold'),
-	superEvolutionButton: z.string().default('Super Evolution - 200 Gold'),
+	superEvolutionButton: z.string().default('Super Evolution'),
 	backButton: z.string().default('Back'),
 	
 	// Super evolution screen
@@ -86,6 +94,11 @@ export const schema = z.object({
 	blueCastle: z.string().default('Blue Castle'),
 	score: z.string().default('Score'),
 	flags: z.string().default('Flags'),
+	
+	// Connections view
+	connectionsMd: z.string().default('Waiting for warriors to join the battle...'),
+	players: z.string().default('Warriors'),
+	noPlayersYet: z.string().default('No warriors have joined the battle yet. Share the link to recruit your army!'),
 
 	// Battle damage formula
 	attackMultiplier: z.number().default(4),
@@ -103,6 +116,16 @@ export const schema = z.object({
 	superEvolveStatIncrease: z.number().default(15),
 	superEvolveStatDecrease: z.number().default(3),
 	goldGenMultiplier: z.number().default(10),
+	// Super skill parameters
+	teleportMinAdvance: z.number().default(10), // Minimum % forward spawn
+	teleportMaxAdvance: z.number().default(50), // Maximum % forward spawn
+	goldMagnetShift: z.number().default(25), // % closer to castle per player
+	goldMagnetMinPosition: z.number().default(25), // Minimum % position for gold
+	warEconomyCostReduction: z.number().default(20), // % cost reduction
+	warEconomyStatPenalty: z.number().default(10), // % stat penalty
+	fortressAttackBonus: z.number().default(25), // % attack bonus for defenders
+	warmasterBonusIncrease: z.number().default(33), // % increase to type advantage damage
+	solidStoneDamageReduction: z.number().default(50), // % damage reduction from type disadvantage
 	// Combat system explanation
 	combatSystemExplanation: z.string().default('Melee beats Ranged, Ranged beats Mage, Mage beats Melee — just like rock-paper-scissors!'),
 	evolutionNotice: z.string().default('You can evolve your soldier between battle rounds.')

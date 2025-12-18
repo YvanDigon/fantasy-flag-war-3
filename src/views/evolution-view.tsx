@@ -96,7 +96,11 @@ function generateEvolutionOptions(): EvolutionOption[] {
 }
 
 export const EvolutionView: React.FC = () => {
-	const { gold, soldierStats, currentEvolutionOptions } = useSnapshot(playerStore.proxy);
+	const { gold, soldierStats, currentEvolutionOptions, superSkill } = useSnapshot(playerStore.proxy);
+	
+	// Calculate War Economy discount
+	const warEconomyDiscount = superSkill === 'war-economy' ? config.warEconomyCostReduction / 100 : 0;
+	const evolveCost = Math.round(config.evolveSoldierPrice * (1 - warEconomyDiscount));
 	
 	// Generate options if they don't exist yet
 	React.useEffect(() => {
@@ -116,10 +120,10 @@ export const EvolutionView: React.FC = () => {
 	};
 
 	const handleConfirm = async (option: EvolutionOption) => {
-		if (gold < config.evolveSoldierPrice) return;
+		if (gold < evolveCost) return;
 
 		await kmClient.transact([playerStore], ([playerState]) => {
-			playerState.gold -= config.evolveSoldierPrice;
+			playerState.gold -= evolveCost;
 			playerState.soldierStats.type = option.type;
 			// Prefix with super evolution title if it exists
 			playerState.soldierStats.name = playerState.superEvolutionTitle 
@@ -137,18 +141,21 @@ export const EvolutionView: React.FC = () => {
 				playerState.soldierStats.sprite = SOLDIER_IMAGES[option.type];
 			}
 			
-// Apply stat boosts
-		const stat1 = option.statBoosts.stat1;
-		const stat2 = option.statBoosts.stat2;
-		playerState.soldierStats[stat1] = (playerState.soldierStats[stat1] as number) + config.evolveStatIncrease;
-		playerState.soldierStats[stat2] = (playerState.soldierStats[stat2] as number) + config.evolveStatIncrease;
-		
-		// Increment evolution level
-		playerState.evolutionLevel = playerState.evolutionLevel + 1;
+			// Apply stat boosts
+			const stat1 = option.statBoosts.stat1;
+			const stat2 = option.statBoosts.stat2;
+			(playerState.soldierStats as unknown as Record<string, number>)[stat1] = (playerState.soldierStats[stat1] as number) + config.evolveStatIncrease;
+			(playerState.soldierStats as unknown as Record<string, number>)[stat2] = (playerState.soldierStats[stat2] as number) + config.evolveStatIncrease;
 			
+			// Increment evolution level
+			playerState.evolutionLevel = playerState.evolutionLevel + 1;
+				
 			// Regenerate evolution options for next time
 			playerState.currentEvolutionOptions = generateEvolutionOptions();
 			
+			// Set notification and return to commander view
+			const newName = playerState.soldierStats.name;
+			playerState.notification = `Your soldier has evolved into ${newName}!`;
 			playerState.currentView = 'commander';
 		});
 	};
@@ -203,11 +210,11 @@ export const EvolutionView: React.FC = () => {
 								</div>
 							</div>
 							<div className="text-center font-bold text-yellow-600">
-								{config.evolutionCost}
+							{evolveCost} {config.gold}
 							</div>
 							<button
 								onClick={() => handleConfirm(option)}
-								disabled={gold < 100}
+								disabled={gold < evolveCost}
 								className="rounded bg-green-600 px-4 py-2 font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
 							>
 								{config.confirmChoice}
@@ -225,18 +232,19 @@ export const EvolutionView: React.FC = () => {
 						});
 					}}
 					disabled={gold < config.superEvolveSoldierPrice}
-					className="rounded-lg bg-purple-600 px-8 py-4 text-xl font-bold text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-				>
-					{config.superEvolutionButton}
-				</button>
-			)}
-
-			<button
-				onClick={handleBack}
-				className="rounded-lg bg-gray-300 px-8 py-4 text-xl font-bold text-gray-700 hover:bg-gray-400"
+				className="flex flex-col items-center rounded-lg bg-yellow-700 px-8 py-4 text-xl font-bold text-white hover:bg-yellow-800 disabled:cursor-not-allowed disabled:bg-gray-400"
 			>
-				{config.backButton}
+				<span>{config.superEvolutionButton} - {config.superEvolveSoldierPrice} {config.gold}</span>
+				<span>✨✨</span>
 			</button>
-		</div>
-	);
+		)}
+
+		<button
+			onClick={handleBack}
+			className="rounded-lg bg-gray-300 px-8 py-4 text-xl font-bold text-gray-700 hover:bg-gray-400"
+		>
+			{config.backButton}
+		</button>
+	</div>
+);
 };

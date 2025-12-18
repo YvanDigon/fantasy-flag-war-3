@@ -14,6 +14,7 @@ export const globalActions = {
 				globalState.phaseStartTime = kmClient.serverTimestamp();
 			
 			// Initialize flags
+			globalState.flags = {};
 			const lanes: Lane[] = ['top', 'mid', 'bot'];
 			const teams: Team[] = ['red', 'blue'];
 			
@@ -57,6 +58,9 @@ export const globalActions = {
 			globalState.phase = 'battle';
 			globalState.phaseStartTime = kmClient.serverTimestamp();
 			globalState.lastBattleTick = 0; // Set to 0 to allow immediate first tick
+
+			// Reset Gold Magnet counts (will be updated as players spawn)
+			globalState.goldMagnetCount = { red: 0, blue: 0 };
 
 			// Spawn gold pickups at the middle of each lane
 			const lanes: Lane[] = ['top', 'mid', 'bot'];

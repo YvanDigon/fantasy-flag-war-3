@@ -72,6 +72,7 @@ export interface BattleUnit {
 	sprite: string; // Image URL
 	inCombatWith?: string; // ID of enemy unit currently fighting
 	isDefender: boolean; // Castle defender (has 2x defense, can't dodge)
+	superSkill?: SuperSkill; // Super evolution skill
 }
 
 export interface Flag {
@@ -100,11 +101,26 @@ export interface EvolutionOption {
 	};
 }
 
-export interface SuperEvolutionOption {
-	boostStat: keyof Omit<UnitStats, 'hp' | 'type' | 'name' | 'sprite'>;
-	boostAmount: number; // +15
-	decreaseStat: keyof Omit<UnitStats, 'hp' | 'type' | 'name' | 'sprite'>;
-	decreaseAmount: number; // -3
+export type SuperSkill =
+	| 'teleport'
+	| 'gold-magnet'
+	| 'war-economy'
+	| 'fortress'
+	| 'acrobat'
+	| 'infiltrator'
+	| 'big-net'
+	| 'warmaster'
+	| 'solid-stone';
+
+export interface SuperSkillOption {
+	skill: SuperSkill;
+	emoji: string;
+	name: string;
+	description: string;
+	statBoosts: {
+		increases: Array<keyof Omit<UnitStats, 'hp' | 'type'>>;
+		decreases: Array<keyof Omit<UnitStats, 'hp' | 'type'>>;
+	};
 }
 
 export interface DeployedUnit {

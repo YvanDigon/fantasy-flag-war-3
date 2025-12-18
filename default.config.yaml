@@ -47,10 +47,18 @@ criticalHitRate: 'Critical Hit'
 goldGeneration: 'Gold Gen'
 type: 'Type'
 
+# Stat info descriptions
+typeInfo: 'Your {type} soldier is strong against {strongAgainst} and weak against {weakAgainst}.'
+attackInfo: 'Determines how much damage your soldier deals. Base damage = Attack * {attackMultiplier}, modified by type advantage.'
+defenseInfo: 'Reduces incoming damage by subtracting Defense / {defenseDivisor} from enemy attacks.'
+speedInfo: 'Determines how fast your soldier moves across the battlefield and the chance to dodge attacks from slower enemies (Speed * {dodgeMultiplier}% dodge chance).'
+criticalHitInfo: 'Each point gives a chance to deal a devastating blow. Critical hits multiply damage by {criticalHitMultiplier}x.'
+goldGenerationInfo: 'Generates additional gold at the end of each battle phase. Earns {goldGenMultiplier} gold per point.'
+
 # Evolution screen
 evolutionTitle: 'Choose Evolution'
 evolutionCost: 'Cost: 100 Gold'
-superEvolutionButton: 'Super Evolution - 200 Gold'
+superEvolutionButton: 'Super Evolution'
 backButton: 'Back'
 
 # Super evolution screen
@@ -84,6 +92,11 @@ blueCastle: 'Blue Castle'
 score: 'Score'
 flags: 'Flags'
 
+# Connections view
+connectionsMd: 'Waiting for warriors to join the battle...'
+players: 'Warriors'
+noPlayersYet: 'No warriors have joined the battle yet. Share the link to recruit your army!'
+
 # Battle damage formula
 attackMultiplier: 3
 defenseDivisor: 2
@@ -98,10 +111,21 @@ goldPickupAmount: 100
 deploySoldierPrice: 100
 evolveSoldierPrice: 100
 evolveStatIncrease: 3
-superEvolveSoldierPrice: 200
+superEvolveSoldierPrice: 250
 superEvolveStatIncrease: 10
 superEvolveStatDecrease: 3
 goldGenMultiplier: 10
+
+# Super skill parameters
+teleportMinAdvance: 10
+teleportMaxAdvance: 50
+goldMagnetShift: 25
+goldMagnetMinPosition: 25
+warEconomyCostReduction: 20
+warEconomyStatPenalty: 10
+fortressAttackBonus: 25
+warmasterBonusIncrease: 33
+solidStoneDamageReduction: 50
 
 # Combat system explanation
 combatSystemExplanation: 'Melee beats Ranged, Ranged beats Mage, Mage beats Melee — just like rock-paper-scissors!'

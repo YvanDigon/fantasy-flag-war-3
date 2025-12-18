@@ -135,9 +135,10 @@ export const PresenterView: React.FC = () => {
 	const blueDefenders = Object.values(battleUnits).filter((u) => u.isDefender && u.team === 'blue' && !u.isDead);
 
 	const sortedCombatEvents = Object.entries(combatEvents)
-		.sort(([a], [b]) => Number(b) - Number(a))
+		.sort(([a], [b]) => Number(a) - Number(b))
 		.slice(0, 50)
-		.map(([, event]) => event);
+		.map(([, event]) => event)
+		.reverse();
 
 	return (
 		<div className="flex h-screen flex-col bg-forest-950">
@@ -416,48 +417,60 @@ export const PresenterView: React.FC = () => {
 					{Object.values(goldPickups)
 						.filter((gold) => !gold.claimed)
 						.map((gold) => {
-							// Calculate position based on lane (gold is at position 50 - middle of lane)
-							let left: string, top: string;
-							const progress = 0.5; // Gold is always at 50% of lane
-							
-							if (gold.lane === 'top') {
-								// Top lane L-shape: first half is vertical, second half is horizontal
-								// At 50%, we're at the corner
-								left = '9%';
-								top = '9%';
-							} else if (gold.lane === 'mid') {
-								// Mid lane diagonal
-								left = `${5 + (progress * 90)}%`;
-								top = `${95 - (progress * 90)}%`;
+						// Calculate position based on actual gold position (affected by Gold Magnet)
+						let left: string, top: string;
+						const progress = gold.position / 100; // Convert position (0-100) to progress (0-1)
+						
+						if (gold.lane === 'top') {
+							// Top lane L-shape: first half is vertical, second half is horizontal
+							if (progress <= 0.5) {
+								// Vertical segment (red castle to corner)
+								left = '5%';
+								top = `${95 - (progress * 2 * 90)}%`;
 							} else {
-								// Bot lane L-shape: first half is horizontal, second half is vertical
-								// At 50%, we're at the corner
-								left = '91%';
-								top = '91%';
+								// Horizontal segment (corner to blue castle)
+								left = `${5 + ((progress - 0.5) * 2 * 90)}%`;
+								top = '5%';
 							}
-							
-							return (
-								<div
-									key={gold.id}
-									className="absolute flex flex-col items-center animate-bounce"
-									style={{ left, top, transform: 'translate(-50%, -50%)', zIndex: 15 }}
-								>
-									<div className="text-4xl drop-shadow-lg">💰</div>
-								</div>
-							);
-						})}
+						} else if (gold.lane === 'mid') {
+							// Mid lane diagonal
+							left = `${5 + (progress * 90)}%`;
+							top = `${95 - (progress * 90)}%`;
+						} else {
+							// Bot lane L-shape: first half is horizontal, second half is vertical
+							if (progress <= 0.5) {
+								// Horizontal segment (red castle to corner)
+								left = `${5 + (progress * 2 * 90)}%`;
+								top = '95%';
+							} else {
+								// Vertical segment (corner to blue castle)
+								left = '95%';
+								top = `${95 - ((progress - 0.5) * 2 * 90)}%`;
+							}
+					}
+					
+					return (
+						<div
+							key={gold.id}
+							className="absolute flex flex-col items-center animate-bounce"
+							style={{ left, top, transform: 'translate(-50%, -50%)', zIndex: 15 }}
+						>
+							<div className="text-4xl drop-shadow-lg">💰</div>
+						</div>
+					);
+				})}
 
 					{/* Red Castle (Bottom Left) with flags */}
 					<div className="absolute bottom-4 left-4 flex flex-col items-center">
-						<div className="text-6xl">🏰</div>
+					<div className="text-6xl">🏰</div>
 						<div className="font-bold text-lg text-red-500 drop-shadow-lg" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>{config.redCastle}</div>
 						<div className="mt-2 flex gap-1">
 							{Object.values(flags)
 								.filter((f) => f.team === 'red' && f.status === 'at-castle')
 								.map((flag) => (
-									<span key={flag.id} className="text-2xl">🚩</span>
-								))}
-						</div>
+								<span key={flag.id} className="text-2xl">🚩</span>
+							))}
+					</div>
 						{/* Defenders */}
 						{redDefenders.length > 0 && (
 							<div className="mt-2 flex flex-col gap-1">
@@ -472,14 +485,14 @@ export const PresenterView: React.FC = () => {
 													style={{ width: `${healthPercent}%` }}
 												/>
 											</div>
-										{/* Defender emoji */}
-										<div className="text-3xl">
-											{defender.stats.type === 'melee' ? '⚔️' : defender.stats.type === 'mage' ? '🧙' : '🏹'}
-										</div>
-											{/* Defender name */}
-											<div className="text-xs font-bold text-red-400">
-												🛡️ {defender.stats.name || defender.stats.type}
-											</div>
+									{/* Defender emoji */}
+									<div className="text-3xl">
+										{defender.stats.type === 'melee' ? '⚔️' : defender.stats.type === 'mage' ? '🧙' : '🏹'}
+									</div>
+									{/* Defender name */}
+									<div className="text-xs font-bold text-red-400">
+										🛡️ {defender.stats.name || defender.stats.type}
+									</div>
 										</div>
 									);
 								})}
@@ -512,14 +525,14 @@ export const PresenterView: React.FC = () => {
 													style={{ width: `${healthPercent}%` }}
 												/>
 											</div>
-										{/* Defender emoji */}
-										<div className="text-3xl">
-											{defender.stats.type === 'melee' ? '⚔️' : defender.stats.type === 'mage' ? '🧙' : '🏹'}
-										</div>
-											{/* Defender name */}
-											<div className="text-xs font-bold text-blue-400">
-												🛡️ {defender.stats.name || defender.stats.type}
-											</div>
+									{/* Defender emoji */}
+									<div className="text-3xl">
+										{defender.stats.type === 'melee' ? '⚔️' : defender.stats.type === 'mage' ? '🧙' : '🏹'}
+									</div>
+									{/* Defender name */}
+									<div className="text-xs font-bold text-blue-400">
+										🛡️ {defender.stats.name || defender.stats.type}
+									</div>
 										</div>
 									);
 								})}

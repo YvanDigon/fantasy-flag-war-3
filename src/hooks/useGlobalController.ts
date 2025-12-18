@@ -95,16 +95,22 @@ export function useGlobalController() {
 			// For each bot, copy a random player's deployment from their team
 			Object.entries(globalState.bots).forEach(([botId, bot]) => {
 				// Get all player deployments from bot's team
-				const teamDeployments = Object.entries(globalState.playerDeployments)
+				let teamDeployments = Object.entries(globalState.playerDeployments)
 					.filter(([_, deployment]) => deployment.team === bot.team);
 				
+				// If no deployments from bot's team, try to copy from enemy team
 				if (teamDeployments.length === 0) {
-					// No players on this team deployed units, skip this bot
-					console.log(`⚠️ Bot ${botId}: No ${bot.team} team deployments found, skipping`);
-					return;
+					console.log(`⚠️ Bot ${botId}: No ${bot.team} team deployments found, copying from enemy team`);
+					teamDeployments = Object.entries(globalState.playerDeployments)
+						.filter(([_, deployment]) => deployment.team !== bot.team);
+					
+					if (teamDeployments.length === 0) {
+						console.log(`⚠️ Bot ${botId}: No deployments at all, skipping`);
+						return;
+					}
 				}
 				
-				console.log(`✅ Bot ${botId}: Found ${teamDeployments.length} ${bot.team} team deployments to copy from`);
+				console.log(`✅ Bot ${botId}: Found ${teamDeployments.length} deployments to copy from`);
 				
 				// Pick a random player's deployment to copy
 				const [_, playerDeployment] = teamDeployments[

@@ -6,12 +6,9 @@ import type {
 	Flag,
 	Lane,
 	SoldierType,
-	Team,
-	UnitStats
+	Team
 } from '@/types';
 import type { GlobalState } from './stores/global-store';
-
-const TICK_INTERVAL = 500; // 0.5 seconds in ms
 const LANE_DISTANCES: Record<Lane, number> = {
 	top: 100,
 	mid: 75,
@@ -23,20 +20,41 @@ export class BattleSimulation {
 	 * Calculate damage dealt by attacker to defender
 	 */
 	static calculateDamage(
-		attackerStats: UnitStats,
-		defenderStats: UnitStats
+		attacker: BattleUnit,
+		defender: BattleUnit
 	): { damage: number; isCritical: boolean } {
+		const attackerStats = attacker.stats;
+		const defenderStats = defender.stats;
+		
 		// Formula: (Attack * multiplier - Defense / divisor) * type advantage * critical hit
 		let baseDamage = Math.max(
 			0,
 			attackerStats.attack * config.attackMultiplier - defenderStats.defense / config.defenseDivisor
 		);
 
+		// Fortress: +25% attack when defending
+		if (attacker.superSkill === 'fortress' && attacker.isDefender) {
+			baseDamage *= (1 + config.fortressAttackBonus / 100);
+		}
+
 		// Type advantage (rock-paper-scissors)
-		const multiplier = this.getTypeAdvantage(
+		let multiplier = this.getTypeAdvantage(
 			attackerStats.type,
 			defenderStats.type
 		);
+		
+		// Warmaster: Type advantage bonus is 33% stronger
+		if (attacker.superSkill === 'warmaster' && multiplier > 1) {
+			const bonus = (multiplier - 1) * (config.warmasterBonusIncrease / 100);
+			multiplier += bonus;
+		}
+		
+		// Solid Stone: 50% less damage from type disadvantage
+		if (defender.superSkill === 'solid-stone' && multiplier > 1) {
+			const reduction = config.solidStoneDamageReduction / 100;
+			multiplier = 1 + (multiplier - 1) * (1 - reduction);
+		}
+		
 		baseDamage *= multiplier;
 
 		// Critical hit check
@@ -65,15 +83,22 @@ export class BattleSimulation {
 	 * Check if defender can dodge the attack
 	 */
 	static canDodge(
-		attackerStats: UnitStats,
-		defenderStats: UnitStats,
-		defenderIsDefender: boolean = false
+		attacker: BattleUnit,
+		defender: BattleUnit
 	): boolean {
-		// Castle defenders can't dodge
-		if (defenderIsDefender) {
+		// Big Net: Prevents all dodges
+		if (attacker.superSkill === 'big-net') {
+			return false;
+		}
+		
+		// Castle defenders can't dodge (unless they have Infiltrator skill)
+		if (attacker.isDefender && defender.superSkill !== 'infiltrator') {
 			return false;
 		}
 
+		const attackerStats = attacker.stats;
+		const defenderStats = defender.stats;
+		
 		const attackerPower =
 			attackerStats.attack +
 			attackerStats.defense +
@@ -83,7 +108,8 @@ export class BattleSimulation {
 			defenderStats.defense +
 			defenderStats.criticalHitRate;
 
-		if (defenderPower >= attackerPower) {
+		// Acrobat: Can dodge even when facing weaker opponents
+		if (defender.superSkill !== 'acrobat' && defenderPower >= attackerPower) {
 			return false;
 		}
 
@@ -158,7 +184,7 @@ export class BattleSimulation {
 		defender.inCombatWith = attacker.id;
 
 		// Check for dodge only on initial contact (not on continued combat)
-		if (isNewCombat && this.canDodge(attacker.stats, defender.stats, defender.isDefender)) {
+		if (isNewCombat && this.canDodge(attacker, defender)) {
 			// Dodge successful - both units escape and continue moving
 			const dodgeEvent: CombatEvent = {
 				id: `${kmClient.serverTimestamp()}-dodge`,
@@ -175,8 +201,8 @@ export class BattleSimulation {
 		}
 
 		// Both units attack each other simultaneously
-		const attackerDamage = this.calculateDamage(attacker.stats, defender.stats);
-		const defenderDamage = this.calculateDamage(defender.stats, attacker.stats);
+		const attackerDamage = this.calculateDamage(attacker, defender);
+		const defenderDamage = this.calculateDamage(defender, attacker);
 
 		// Apply damage to defender
 		defender.currentHp -= attackerDamage.damage;

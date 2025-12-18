@@ -14,10 +14,11 @@ export interface GlobalState {
 	startTimestamp: number;
 	players: Record<
 		string,
-		{ name: string; team: Team | null; ready: boolean }
+		{ name: string; team: Team | null; ready: boolean; isGeneratingSprite: boolean }
 	>;
 	bots: Record<string, { team: Team; botNumber: number }>; // key: bot ID
 	playerDeployments: Record<string, { team: Team; units: BattleUnit[] }>; // Track player deployments for bot copying
+	goldMagnetCount: { red: number; blue: number }; // Count of players with Gold Magnet skill per team
 	// Game state
 	phase: GamePhase;
 	phaseStartTime: number;
@@ -44,6 +45,7 @@ const initialState: GlobalState = {
 	players: {},
 	bots: {},
 	playerDeployments: {},
+	goldMagnetCount: { red: 0, blue: 0 },
 	phase: 'intro-preparation',
 	phaseStartTime: 0,
 	scores: { red: 0, blue: 0 },

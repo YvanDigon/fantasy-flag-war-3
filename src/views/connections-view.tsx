@@ -38,8 +38,17 @@ export const ConnectionsView: React.FC<React.PropsWithChildren<Props>> = ({
 				</div>
 
 				<div className="mt-4 bg-white border border-gray-200 rounded-lg shadow p-6">
-					<div className="text-sm text-gray-500">{config.players}</div>
-					<div className="text-3xl font-bold mt-1">{onlinePlayersCount}</div>
+					{onlinePlayersCount > 0 ? (
+						<>
+							<div className="text-sm text-gray-500">{config.players}</div>
+							<div className="text-3xl font-bold mt-1">{onlinePlayersCount}</div>
+						</>
+					) : (
+						<div className="text-center text-bark-700 py-4">
+							<div className="text-4xl mb-2">⚔️</div>
+							<p className="text-lg font-semibold">{config.noPlayersYet}</p>
+						</div>
+					)}
 				</div>
 
 				{playersList.length > 0 && (

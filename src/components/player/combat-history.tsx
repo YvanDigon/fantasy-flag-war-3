@@ -1,8 +1,15 @@
+import { globalStore } from '@/state/stores/global-store';
 import { playerStore } from '@/state/stores/player-store';
 import { useSnapshot } from 'valtio';
 
 export const CombatHistory = () => {
 	const { kills, deaths, goldPickups } = useSnapshot(playerStore.proxy);
+	const { phase } = useSnapshot(globalStore.proxy);
+
+	// Only show during battle phase
+	if (phase !== 'battle') {
+		return null;
+	}
 
 	if (kills.length === 0 && deaths.length === 0 && goldPickups.length === 0) {
 		return null;

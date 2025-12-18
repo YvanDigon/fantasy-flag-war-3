@@ -17,6 +17,7 @@ const App: React.FC = () => {
 	useDocumentTitle(title);
 
 	const { started, phase, players, scores } = useSnapshot(globalStore.proxy);
+	const [showResetConfirmation, setShowResetConfirmation] = React.useState(false);
 
 	if (kmClient.clientContext.mode !== 'host') {
 		throw new Error('App host rendered in non-host mode');
@@ -84,12 +85,23 @@ const App: React.FC = () => {
 						>
 							{config.startGameButton}
 						</button>
-						<button
-							onClick={globalActions.resetPlayers}
-							className="rounded-lg bg-purple-600 px-8 py-4 text-xl font-bold text-white transition hover:bg-purple-700"
-						>
-							Reset Players
-						</button>
+						<div className="flex flex-col gap-2">
+							<button
+								onClick={async () => {
+									await globalActions.resetPlayers();
+									setShowResetConfirmation(true);
+									setTimeout(() => setShowResetConfirmation(false), 3000);
+								}}
+								className="rounded-lg bg-purple-600 px-8 py-4 text-xl font-bold text-white transition hover:bg-purple-700"
+							>
+								Reset Players
+							</button>
+							{showResetConfirmation && (
+								<div className="rounded-lg bg-green-100 border-2 border-green-600 p-3 text-center text-green-800 font-semibold">
+									✓ All players have been reset
+								</div>
+							)}
+						</div>
 					</>
 				) : (
 					<>
@@ -157,6 +169,9 @@ const App: React.FC = () => {
 										</div>
 										{player.ready && (
 											<span className="text-green-600">✓ Ready</span>
+										)}
+										{player.isGeneratingSprite && (
+											<span className="text-purple-600">🔄 Generating...</span>
 										)}
 									</div>
 								))}

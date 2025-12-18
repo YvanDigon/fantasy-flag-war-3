@@ -117,8 +117,11 @@ const App: React.FC = () => {
 				playerState.deployedUnits = {};
 				playerState.hasSelectedStartingSoldier = false;
 				playerState.hasSuperEvolved = false;
+				playerState.evolutionLevel = 0;
 				playerState.currentEvolutionOptions = null;
+				playerState.currentSuperSkillOptions = null;
 				playerState.superEvolutionTitle = null;
+				playerState.superSkill = null;
 			});
 		}
 	}, [name, players]);
@@ -134,8 +137,11 @@ const App: React.FC = () => {
 					playerState.hasDeployedDefender = false;
 					playerState.hasSelectedStartingSoldier = false;
 					playerState.hasSuperEvolved = false;
-					playerState.currentEvolutionOptions = null;
-					playerState.superEvolutionTitle = null;
+				playerState.evolutionLevel = 0;
+				playerState.currentEvolutionOptions = null;
+				playerState.currentSuperSkillOptions = null;
+				playerState.superEvolutionTitle = null;
+				playerState.superSkill = null;
 				}
 			});
 		}
@@ -186,20 +192,47 @@ const App: React.FC = () => {
 								? 'https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153223922.png'
 								: 'https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153218722.png');
 
-					// Add small random offset to prevent perfect overlap (±2 position units)
-					const randomOffset = (Math.random() * 4) - 2;
-					const basePosition = playerState.team === 'red' ? 0 : 100;
-					const startPosition = playerState.team === 'red' 
-						? Math.max(0, basePosition + randomOffset)
-						: Math.min(100, basePosition + randomOffset);
+					// Calculate spawn position
+					let startPosition: number;
+					const randomOffset = (Math.random() * 4) - 2; // ±2 random offset
+					
+					// Teleport skill: Spawn 10-50% forward
+					if (playerState.superSkill === 'teleport' && !deployedUnit.isDefender) {
+						const advanceMin = config.teleportMinAdvance;
+						const advanceMax = config.teleportMaxAdvance;
+						const advancePercent = advanceMin + Math.random() * (advanceMax - advanceMin);
+						
+						if (playerState.team === 'red') {
+							startPosition = Math.min(50, advancePercent + randomOffset);
+						} else {
+							startPosition = Math.max(50, 100 - advancePercent + randomOffset);
+						}
+					} else {
+						// Normal spawn at castle
+						const basePosition = playerState.team === 'red' ? 0 : 100;
+						startPosition = playerState.team === 'red' 
+							? Math.max(0, basePosition + randomOffset)
+							: Math.min(100, basePosition + randomOffset);
+					}
 
-					// Create stats with ready bonus if applicable
+					// Create stats with ready bonus and War Economy penalty if applicable
 					const unitStats = { ...playerState.soldierStats };
+					
 					if (playerState.readyBonus) {
 						unitStats.attack += 1;
 						unitStats.defense += 1;
 						unitStats.speed += 1;
 						unitStats.criticalHitRate += 1;
+					}
+					
+					// War Economy: Apply 10% stat penalty
+					if (playerState.superSkill === 'war-economy') {
+						const penalty = config.warEconomyStatPenalty / 100;
+						unitStats.attack = Math.max(1, Math.round(unitStats.attack * (1 - penalty)));
+						unitStats.defense = Math.max(1, Math.round(unitStats.defense * (1 - penalty)));
+						unitStats.speed = Math.max(1, Math.round(unitStats.speed * (1 - penalty)));
+						unitStats.criticalHitRate = Math.max(1, Math.round(unitStats.criticalHitRate * (1 - penalty)));
+						unitStats.goldGeneration = Math.max(1, Math.round(unitStats.goldGeneration * (1 - penalty)));
 					}
 					
 					// Apply 2x defense for defenders
@@ -220,7 +253,8 @@ const App: React.FC = () => {
 						isDead: false,
 						sprite: spriteUrl,
 						inCombatWith: undefined,
-						isDefender: deployedUnit.isDefender
+						isDefender: deployedUnit.isDefender,
+						superSkill: playerState.superSkill || undefined
 					};
 					
 					globalState.battleUnits[unitId] = battleUnit;
@@ -235,7 +269,38 @@ const App: React.FC = () => {
 					};
 				}
 				
-				// Clear deployed units after spawning
+				// Update Gold Magnet count if this player has the skill
+			if (playerState.superSkill === 'gold-magnet' && playerState.team) {
+				if (playerState.team === 'red') {
+					globalState.goldMagnetCount.red += 1;
+				} else {
+					globalState.goldMagnetCount.blue += 1;
+				}
+				
+				// Adjust gold positions based on new count
+				const goldMagnetShift = config.goldMagnetShift;
+				const goldMagnetMinPosition = config.goldMagnetMinPosition;
+				
+				Object.values(globalState.goldPickups).forEach((gold) => {
+					if (gold.claimed) return; // Don't move already claimed gold
+					
+					// Determine which team's castle to move toward
+					let targetPosition = 50; // Default middle
+					if (playerState.team === 'red') {
+						// Move toward red castle (position 0)
+						const shiftAmount = goldMagnetShift * globalState.goldMagnetCount.red;
+						targetPosition = Math.max(goldMagnetMinPosition, 50 - shiftAmount);
+					} else {
+						// Move toward blue castle (position 100)
+						const shiftAmount = goldMagnetShift * globalState.goldMagnetCount.blue;
+						targetPosition = Math.min(100 - goldMagnetMinPosition, 50 + shiftAmount);
+					}
+					
+					gold.position = targetPosition;
+				});
+			}
+			
+			// Clear deployed units after spawning
 				playerState.deployedUnits = {};
 			});
 		} else if (phase === 'preparation' && currentView === 'battle-wait') {
@@ -243,34 +308,22 @@ const App: React.FC = () => {
 			
 			// Grant gold when transitioning from battle to preparation and regenerate evolution options
 			kmClient.transact([globalStore, playerStore], ([globalState, playerState]) => {
-				// Only grant gold if player actually participated in the battle
-				if (participatedInBattle.current) {
-					const baseGold = 200;
-					const bonusGold = playerState.soldierStats.goldGeneration * config.goldGenMultiplier;
-					playerState.gold += baseGold + bonusGold;
-				}
+				// Grant gold to all players (base + bonus from gold generation stat)
+				const baseGold = 200;
+				const bonusGold = playerState.soldierStats.goldGeneration * config.goldGenMultiplier;
+				playerState.gold += baseGold + bonusGold;
 				
 				// Reset participation flag for next battle
 				participatedInBattle.current = false;
 				
 				// Regenerate evolution options for the new preparation phase
 				playerState.currentEvolutionOptions = null;
-				
-				// Reset defender flag for new preparation phase
-				playerState.hasDeployedDefender = false;
-				
-				// Clear ready bonus (temporary 1 round bonus)
+			playerState.currentSuperSkillOptions = null;
 				playerState.readyBonus = false;
-				
-				// Clear combat results from previous battle
-				playerState.kills = [];
-				playerState.deaths = [];
+			playerState.hasDeployedDefender = false; // Reset defender for new turn
 				playerState.goldPickups = [];
-				
-				// Clear processed events
-				processedCombatEvents.current.clear();
-				
-				// Ensure player's ready state is reset
+				playerState.kills = []; // Reset kills from previous battle
+				playerState.deaths = []; // Reset deaths from previous battle
 				if (globalState.players[kmClient.id]) {
 					globalState.players[kmClient.id].ready = false;
 				}
@@ -296,9 +349,6 @@ const App: React.FC = () => {
 				<PlayerLayout.Main>
 					<TeamSelectionView />
 				</PlayerLayout.Main>
-				<PlayerLayout.Footer>
-					<NameLabel name={name} />
-				</PlayerLayout.Footer>
 			</PlayerLayout.Root>
 		);
 	}
@@ -325,9 +375,6 @@ const App: React.FC = () => {
 				{currentView === 'battle-wait' && <BattleWaitView />}
 			</PlayerLayout.Main>
 
-			<PlayerLayout.Footer>
-				<NameLabel name={name} />
-			</PlayerLayout.Footer>
 		</PlayerLayout.Root>
 	);
 };

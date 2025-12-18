@@ -18,7 +18,8 @@ export const playerActions = {
 				globalState.players[kmClient.id] = {
 					name,
 					team: null,
-					ready: false
+					ready: false,
+					isGeneratingSprite: false
 				};
 			}
 		);

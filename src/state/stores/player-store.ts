@@ -1,5 +1,12 @@
 import { kmClient } from '@/services/km-client';
-import type { DeployedUnit, EvolutionOption, Team, UnitStats } from '@/types';
+import type {
+	DeployedUnit,
+	EvolutionOption,
+	SuperSkill,
+	SuperSkillOption,
+	Team,
+	UnitStats
+} from '@/types';
 
 export interface CombatResult {
 	opponentName: string;
@@ -29,12 +36,16 @@ export interface PlayerState {
 	hasSuperEvolved: boolean;
 	evolutionLevel: number; // Number of regular evolutions done
 	currentEvolutionOptions: EvolutionOption[] | null;
+	currentSuperSkillOptions: SuperSkillOption[] | null;
 	superEvolutionTitle: string | null;
+	superSkill: SuperSkill | null; // Selected super evolution skill
 	hasDeployedDefender: boolean;
 	readyBonus: boolean; // +1 bonus to attack, defense, speed, critical hit for pressing Ready early
 	kills: CombatResult[]; // Enemies your soldiers killed
 	deaths: CombatResult[]; // Your soldiers killed by enemies
 	goldPickups: GoldPickupResult[]; // Gold bags collected during battle
+	notification: string | null; // Temporary notification message
+	isGeneratingSprite: boolean; // Player is generating super evolution sprites
 }
 
 const initialState: PlayerState = {
@@ -57,12 +68,16 @@ const initialState: PlayerState = {
 	hasSuperEvolved: false,
 	evolutionLevel: 0,
 	currentEvolutionOptions: null,
+	currentSuperSkillOptions: null,
 	superEvolutionTitle: null,
+	superSkill: null,
 	hasDeployedDefender: false,
 	readyBonus: false,
 	kills: [],
 	deaths: [],
-	goldPickups: []
+	goldPickups: [],
+	notification: null,
+	isGeneratingSprite: false
 };
 
 export const playerStore = kmClient.localStore<PlayerState>(

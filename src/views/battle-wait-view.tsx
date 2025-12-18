@@ -14,8 +14,53 @@ const SOLDIER_IMAGES: Record<SoldierType, string> = {
 		'https://loquiz.com/wpmainpage/wp-content/uploads/2025/12/image_2025-12-13_153218722.png'
 };
 
+function getSuperSkillEmoji(skill: string): string {
+	const emojis: Record<string, string> = {
+		teleport: '🚀',
+		'gold-magnet': '🧲',
+		'war-economy': '💰',
+		fortress: '🏰',
+		acrobat: '🤸',
+		infiltrator: '🥷',
+		'big-net': '🕸️',
+		warmaster: '⚔️',
+		'solid-stone': '🛡️'
+	};
+	return emojis[skill] || '✨';
+}
+
+function getSuperSkillName(skill: string): string {
+	const names: Record<string, string> = {
+		teleport: 'Teleport',
+		'gold-magnet': 'Gold Magnet',
+		'war-economy': 'War Economy',
+		fortress: 'Fortress',
+		acrobat: 'Acrobat',
+		infiltrator: 'Infiltrator',
+		'big-net': 'Big Net',
+		warmaster: 'Warmaster',
+		'solid-stone': 'Solid Stone'
+	};
+	return names[skill] || skill;
+}
+
+function getSuperSkillDescription(skill: string): string {
+	const descriptions: Record<string, string> = {
+		teleport: 'Spawn 10-50% forward',
+		'gold-magnet': 'Gold bags spawn closer',
+		'war-economy': '-20% costs, -10% stats',
+		fortress: 'Defender +25% attack',
+		acrobat: 'Dodge weaker opponents',
+		infiltrator: 'Dodge defenders',
+		'big-net': 'Prevent enemy dodges',
+		warmaster: '+33% type advantage',
+		'solid-stone': '-50% type disadvantage'
+	};
+	return descriptions[skill] || '';
+}
+
 export const BattleWaitView: React.FC = () => {
-	const { soldierStats, team, readyBonus, evolutionLevel, hasSuperEvolved } = useSnapshot(playerStore.proxy);
+	const { soldierStats, team, readyBonus, evolutionLevel, hasSuperEvolved, superSkill } = useSnapshot(playerStore.proxy);
 	
 	const getUnitEmoji = (type: SoldierType) => {
 		return type === 'melee' ? '⚔️' : type === 'mage' ? '🧙' : '🏹';
@@ -93,6 +138,18 @@ export const BattleWaitView: React.FC = () => {
 						<div className="text-lg font-bold">{soldierStats.goldGeneration}</div>
 					</div>
 				</div>
+				
+				{superSkill && (
+					<div className="mt-4 rounded-lg bg-purple-100 p-3 border-2 border-purple-600">
+						<div className="flex items-center gap-2">
+							<span className="text-2xl">{getSuperSkillEmoji(superSkill)}</span>
+							<div className="flex-1 text-left">
+								<div className="font-bold text-purple-700">{getSuperSkillName(superSkill)}</div>
+								<div className="text-xs text-purple-600">{getSuperSkillDescription(superSkill)}</div>
+							</div>
+						</div>
+					</div>
+				)}
 			</div>
 
 			{/* Combat History */}
