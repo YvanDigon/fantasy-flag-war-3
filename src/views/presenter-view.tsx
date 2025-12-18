@@ -2,38 +2,12 @@ import { config } from '@/config';
 import { generateLink } from '@/kit/generate-link';
 import { kmClient } from '@/services/km-client';
 import { globalStore } from '@/state/stores/global-store';
-import type { Lane } from '@/types';
+import type { Lane, PresenterClientContext } from '@/types';
 import { KmQrCode } from '@kokimoki/shared';
 import * as React from 'react';
 import { useSnapshot } from 'valtio';
 
-function getEffectClass(name: string): string {
-	const lowerName = name.toLowerCase();
-	
-	if (lowerName.includes('fire') || lowerName.includes('crimson') || lowerName.includes('hell') || lowerName.includes('berserker')) {
-		return 'effect-fire';
-	}
-	if (lowerName.includes('frost') || lowerName.includes('ice') || lowerName.includes('crystal')) {
-		return 'effect-frost';
-	}
-	if (lowerName.includes('shadow') || lowerName.includes('void') || lowerName.includes('dark')) {
-		return 'effect-shadow';
-	}
-	if (lowerName.includes('storm') || lowerName.includes('lightning') || lowerName.includes('thunder')) {
-		return 'effect-storm';
-	}
-	if (lowerName.includes('poison') || lowerName.includes('venom') || lowerName.includes('toxic')) {
-		return 'effect-poison';
-	}
-	if (lowerName.includes('holy') || lowerName.includes('divine') || lowerName.includes('mystic') || lowerName.includes('arcane')) {
-		return 'effect-holy';
-	}
-	if (lowerName.includes('iron') || lowerName.includes('steel') || lowerName.includes('dreadnought')) {
-		return 'effect-metal';
-	}
-	
-	return 'effect-default';
-}
+// Removed unused getEffectClass function - effect is stored directly in unit.stats.visualEffect
 
 interface CombatFeedback {
 	id: string;
@@ -678,7 +652,7 @@ export const PresenterView: React.FC = () => {
 						<div className="text-sm font-bold text-parchment mb-2 text-center">Scan to Join</div>
 						<div className="flex justify-center">
 							<KmQrCode 
-								data={generateLink(kmClient.clientContext.playerCode, { mode: 'player' })} 
+								data={generateLink((kmClient.clientContext as PresenterClientContext).playerCode, { mode: 'player' })} 
 								size={150} 
 								interactive={false}
 							/>

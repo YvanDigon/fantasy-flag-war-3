@@ -1,6 +1,5 @@
 import { kmClient } from '@/services/km-client';
 import { BattleSimulation } from '@/state/battle-simulation';
-import { globalActions } from '@/state/actions/global-actions';
 import { globalStore } from '@/state/stores/global-store';
 import { useEffect, useRef } from 'react';
 import { useSnapshot } from 'valtio';

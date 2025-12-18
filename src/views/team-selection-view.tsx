@@ -45,7 +45,8 @@ export const TeamSelectionView: React.FC = () => {
 					globalState.players[kmClient.id] = {
 						name: playerState.name,
 						team: selectedTeam,
-						ready: false
+						ready: false,
+						isGeneratingSprite: false
 					};
 				} else {
 					globalState.players[kmClient.id].team = selectedTeam;

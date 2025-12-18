@@ -1,4 +1,3 @@
-import { NameLabel } from '@/components/player/name-label';
 import { config } from '@/config';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useGlobalController } from '@/hooks/useGlobalController';
@@ -13,6 +12,7 @@ import { EvolutionView } from '@/views/evolution-view';
 import { IntroPreparationView } from '@/views/intro-preparation-view';
 import { SuperEvolutionView } from '@/views/super-evolution-view';
 import { TeamSelectionView } from '@/views/team-selection-view';
+import type { BattleUnit } from '@/types';
 import * as React from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -66,6 +66,8 @@ const App: React.FC = () => {
 
 			processedCombatEvents.current.add(eventId);
 
+			if (!event.attackerId || !event.defenderId) continue;
+			
 			const killerUnit = battleUnits[event.attackerId];
 			const deadUnit = battleUnits[event.defenderId];
 
@@ -243,7 +245,7 @@ const App: React.FC = () => {
 					const battleUnit: BattleUnit = {
 						id: unitId,
 						playerId,
-						team: playerState.team,
+					team: playerState.team!, // Non-null assertion - checked earlier
 						lane: deployedUnit.lane || 'mid', // Defenders use mid lane for positioning
 						stats: unitStats,
 						currentHp: unitStats.hp,
@@ -262,7 +264,7 @@ const App: React.FC = () => {
 				});
 				
 				// Store deployment for bot copying
-				if (playerUnits.length > 0) {
+				if (playerUnits.length > 0 && playerState.team) {
 					globalState.playerDeployments[playerId] = {
 						team: playerState.team,
 						units: playerUnits

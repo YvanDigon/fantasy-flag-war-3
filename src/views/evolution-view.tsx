@@ -237,14 +237,14 @@ export const EvolutionView: React.FC = () => {
 				<span>{config.superEvolutionButton} - {config.superEvolveSoldierPrice} {config.gold}</span>
 				<span>✨✨</span>
 			</button>
-		)}
+)}
 
-		<button
-			onClick={handleBack}
-			className="rounded-lg bg-gray-300 px-8 py-4 text-xl font-bold text-gray-700 hover:bg-gray-400"
-		>
-			{config.backButton}
-		</button>
+<button
+	onClick={handleBack}
+	className="rounded-lg bg-gray-300 px-8 py-4 text-xl font-bold text-gray-700 hover:bg-gray-400"
+>
+	{config.backButton}
+</button>
 	</div>
 );
 };
